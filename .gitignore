@@ -1,0 +1,8 @@
+# idea woekspeace config file folder
+.idea
+# default log4js output folder
+logs
+# node modules
+node_modules
+# jest test coverage folder
+coverage

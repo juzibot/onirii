@@ -43,7 +43,6 @@ export class LogFactory {
   public static flush(newInstanceLog: string): void {
     config.appenders = Object.assign(config.appenders, LogFactory.generateAppenders(newInstanceLog));
     config.categories = Object.assign(config.categories, LogFactory.generateCategories(newInstanceLog));
-    console.log(config);
     if (!Object.keys(config.appenders).includes(newInstanceLog, 0)) {
       log4js.configure(config);
     }

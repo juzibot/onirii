@@ -17,18 +17,23 @@ export class PublicConfigLoader {
   /**
    * Get queue public necessary config from env, if specific queueType get current env
    *
-   * @param queueType supported queue typeå
+   * @param name current instance name (this name will inject to log config)
+   * @param queueType supported queue type
    * @see #QueueEnum
    * @return PublicConfigModel public config data
    */
-  public static getNecessaryConfig(queueType?: QueueEnum): PublicConfigModel {
-    const publicConfig = {
+  public static getNecessaryConfig(name: string, queueType?: QueueEnum): PublicConfigModel {
+    // load config from env
+    const publicConfig: PublicConfigModel = {
       apiVersion: queueType ? process.env[`${queueType}_API_VERSION`] : process.env.API_VERSION,
       region: queueType ? process.env[`${queueType}_REGION`] : process.env.REGION,
       accessKeyId: queueType ? process.env[`${queueType}_ACCESS_KEY`] : process.env.ACCESS_KEY,
       secretAccessKey: queueType ? process.env[`${queueType}_SECRET_ACCESS_KEY`] : process.env.SECRET_ACCESS_KEY,
+      amqpUrl: queueType ? process.env[`${queueType}_AMQP_URL`] : process.env.AMQP_URL,
+      apiUrl: queueType ? process.env[`${queueType}_API_URL`] : process.env.API_URL,
+      apiAuth: queueType ? process.env[`${queueType}_API_AUTH`] : process.env.API_AUTH,
     };
-    this.logger.debug(`Loaded Public Config From ENV: ${JSON.stringify(publicConfig)}`);
+    this.logger.debug(`Loaded ${name}-${queueType} Public Config From ENV: ${JSON.stringify(publicConfig)}`);
     return publicConfig;
   }
 
@@ -50,6 +55,7 @@ export class PublicConfigLoader {
     }
     return Object.assign(basicConfig, customConfig);
   }
+
 }
 
 // Merge-ability queue type

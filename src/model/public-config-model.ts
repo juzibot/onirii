@@ -3,4 +3,7 @@ export interface PublicConfigModel {
   region?: string;
   accessKeyId?: string;
   secretAccessKey?: string;
+  amqpUrl?: string;
+  apiUrl?: string;
+  apiAuth?: string;
 }

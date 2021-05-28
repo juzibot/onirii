@@ -1,98 +1,80 @@
 import { Channel, Connection } from 'amqplib';
-import { LogFactory } from '../factory/log-factory';
-import { AmqpConnectionInitializer } from '../init/amqp-connection-initializer';
-import { AmqpServiceAdapter } from '../interface/amqp-service-adapter';
+import { Logger } from 'log4js';
+import { PublicConfigLoader } from '../config/public-config-loader';
+import { AmqpQueueInterface } from '../interface/amqp-queue-interface';
+import { PublicConfigModel } from '../model/public-config-model';
+import { QueueEnum } from '../model/queue-enum';
 
-export class AmqpServiceImpl implements AmqpServiceAdapter {
+/**
+ *
+ * @since 1.0.0
+ * @date 2021-05-29
+ * @author Luminous(BGLuminous)
+ */
+export class AmqpServiceImpl implements AmqpQueueInterface {
   // logger
-  private readonly logger;
+  protected logger: Logger | undefined;
   // current amqp connect thi should not overwrite
-  private amqpInstance: Connection;
+  protected amqpInstance: Connection | undefined;
   // channel
-  protected defaultChannel: Channel;
+  protected defaultChannel: Channel | undefined;
 
   // current service name
-  private readonly name: string;
+  protected readonly name: string;
+  // current queue type
+  protected readonly queueType: QueueEnum;
   // current instance url
-  private readonly url: string | undefined;
+  protected readonly url: string | undefined;
   // options
-  private readonly options: {} | undefined;
+  protected readonly options: {} | undefined;
+  // public config
+  protected config: PublicConfigModel | undefined;
 
-  constructor(name: string, url?: string, options?: {}, loopStatsusCheck: boolean) {
-    this.name = name;
-    this.url = url;
-    this.options = options;
-    LogFactory.flush(`amqp-${name}`);
-    this.logger = LogFactory.getLogger(`amqp-${name}`);
-  }
-
-  public async init() {
-    if (this.amqpInstance !== undefined) {
-      this.logger.warn(`Amqp Instance ${this.name} Already initialized Passing Operation`);
+  /**
+   *  loopStatusCheck: boolean
+   * @param name
+   * @param queueType
+   * @param url
+   * @param options
+   */
+  constructor(name: string, queueType: QueueEnum, url?: string, options?: {}) {
+    if (!url) {
+      this.config = PublicConfigLoader.getNecessaryConfig(name, queueType);
     }
-    this.amqpInstance = await AmqpConnectionInitializer.createAmqpConnection(this.name, this.url, this.options);
-    this.defaultChannel = await this.amqpInstance.createChannel();
+    this.name = name;
+    this.url = url ? url : this.config!.amqpUrl;
+    this.options = options;
+    this.queueType = queueType;
   }
 
-  public async createCustomChannel(): Promise<Channel> {
+  public async createCustomAmqpChannel(): Promise<Channel> {
+    if (!this.amqpInstance || !this.logger) {
+      throw new Error('You should init this instance first');
+    }
     return await this.amqpInstance.createChannel();
   }
 
-  changeMessageVisibility<T>(): T {
-    return undefined;
+
+  protected verbose(part: string) {
+    this.logger!.debug(`Instance ${this.name}-${this.queueType} ${part}`);
   }
 
-  changeMessageVisibilityBatch<T>(): T {
-    return undefined;
+  assertQueue(): void {
   }
 
-  creatQueue(params: paramType, callback?: callbackType): responseType {
-    this.defaultChannel.crea(params);
-    return undefined;
+  bindQueue(): void {
   }
 
-  deleteMessage<T>(): T {
-    return undefined;
+  getQueueSimpleStatus(): void {
   }
 
-  deleteMessageBatch<T>(): T {
-    return undefined;
+  deleteQueue(): void {
   }
 
-  deleteQueue(params: paramType, callback?: callbackType): responseType {
-    return undefined;
+  purgeQueue(): void {
   }
 
-  getQueueAttributes(params: paramType, callback?: callbackType): responseType {
-    return undefined;
-  }
-
-  getQueueUrl(params: paramType, callback?: callbackType): responseType {
-    return undefined;
-  }
-
-  listQueue(): responseType {
-    return undefined;
-  }
-
-  purgeQueue(params: paramType, callback?: callbackType): responseType {
-    return undefined;
-  }
-
-  receiveMessage<T>(): T {
-    return undefined;
-  }
-
-  sendMessage<T>(): T {
-    return undefined;
-  }
-
-  sendMessageBatch<T>(): T {
-    return undefined;
-  }
-
-  setQueueAttributes(params: paramType, callback?: callbackType): responseType {
-    return undefined;
+  unbindQueue(): void {
   }
 
 }

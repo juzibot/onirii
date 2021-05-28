@@ -4,7 +4,7 @@ Universal queue SDK
 
 ## Features
 
-Support message queue list:
+### Support message queue list:
 
 - [ ] ActiveMQ (Waiting)
 - [x] AmazonSQS (Developing)
@@ -17,6 +17,10 @@ Support message queue list:
 - [ ] RocketMQ (Waiting)
 - [x] RabbitMQ (Developing)
 
+### Single Function list:
+
+- [ ] Rabbit ConfirmChannel Supported
+
 ## Onirii Supported Features List
 
 | Queue | Queue | Message | Permission | Tag | Other | SDK | Api | Remark |
@@ -24,13 +28,29 @@ Support message queue list:
 | ActiveMQ | ? | ? | ? | ? | ? | ? | ? |  |
 | AmazonSQS | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |  |  |
 | CMQ | ? | ? | ? | ? | ? | ? | ? |  |
-| CKafka | ? | ? | ? | ? | ? | ? | ? |  |  
+| CKafka | ? | ? | ? | ? | ? | ? | ? |  |
 | DTMQ | ? | ? | ? | ? | ? | ? | ? |  |
 | JCQ | ? | ? | ? | ? | ? | ? | ? |  |
 | Kafka | ? | ? | ? | ? | ? | ? | ? |  |
 | MQTT | ? | ? | ? | ? | ? | ? | ? |  |
-| RocketMQ | ? | ? | ? | ? | ? | ? | ? |  |  
+| RocketMQ | ? | ? | ? | ? | ? | ? | ? |  |
 | RabbitMQ | ? | ? | ? | ? | ? | ? | ? |  |
+
+## Developing Status
+
+Note:: ✓ realized ✓✓ realized and tested
+
+### OriginalQueueInterface
+
+| Queue | createQueue | getQueue | deleteQueue | purgeQueue |
+| :----: | :-----: | :----: | :----: | :----: |
+| RabbitMQ | x | x | ✓✓ | ✓✓ | 
+
+### AmqpQueueInterface
+
+| Queue | assertQueue | getQueueSimpleStatus | bindQueue | unbindQueue |
+| :----: | :-----: | :----: | :----: | :----: |
+| RabbitMQ | ✓✓ | ✓✓ | ✓✓ | ✓✓ |
 
 ## SDK Description
 

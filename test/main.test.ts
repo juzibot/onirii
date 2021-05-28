@@ -1,22 +1,13 @@
-import axios from 'axios';
+import { curly } from 'node-libcurl';
 import { QueueEnum } from '../src/model/queue-enum';
 
 test('temp test', async () => {
 
+  const { statusCode, data, headers } = await curly.get('baidu.com');
 
-  const rs = await new Promise((resolve, reject) => {
-    axios.get('').then(res => {
-      if (res.status === 200) {
-        resolve(res.data);
-      }
-      resolve(undefined);
-    }).catch(err => {
-      reject(err);
-    });
-  });
-
-
-  console.log(rs);
+  console.log(statusCode);
+  console.log(data);
+  console.log(headers);
 
   expect(QueueEnum.SQS).toBe('SQS');
 });

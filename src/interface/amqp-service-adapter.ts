@@ -1,6 +1,6 @@
 import MessageAdapter from './message-adapter';
-import QueueAdapter from './queue-adapter';
+import OriginalQueueInterface from './original-queue-interface';
 
-export interface AmqpServiceAdapter extends QueueAdapter, MessageAdapter {
+export interface AmqpServiceAdapter extends OriginalQueueInterface, MessageAdapter {
 
 }

@@ -16,18 +16,35 @@ test('amqp-impl-amqp-queue-interface-test', async () => {
   const assertQueueRs = await instance.assertQueue('testQueue');
   logger.debug(assertQueueRs);
 
-  const getQueueSimpleStatusRs = await instance.getQueueSimpleStatus('testQueue');
-  logger.debug(getQueueSimpleStatusRs);
+  const getQueueStatusRs = await instance.getQueueStatus('testQueue');
+  logger.debug(getQueueStatusRs);
 
-  const bindQueueRs = await instance.bindQueueExchange('testQueue', 'testExchange', 'testKey');
+  const bindQueueRs = await instance.bindQueueToExchange('testQueue', 'testExchange', 'testKey');
   logger.debug(bindQueueRs);
 
-  const unbindQueueRs = await instance.bindQueueExchange('testQueue', 'testExchange', 'testKey');
+  const unbindQueueRs = await instance.unbindQueueToExchange('testQueue', 'testExchange', 'testKey');
   logger.debug(unbindQueueRs);
+});
 
-  const purgeQueueRs = await instance.purgeQueue('testQueue');
-  logger.debug(purgeQueueRs);
+test('amqp-impl-amqp-exchange-interface-test', async () => {
+  const testExchange = 'testExchange';
+  const targetExchange = 'targetExchange2';
 
-  const deleteQueueRs = await instance.deleteQueue('testQueue');
-  logger.debug(deleteQueueRs);
+  const instance = new AmqpImpl('test-amqp-impl', QueueEnum.RABBIT);
+  await instance.ready();
+
+  const assertExchangeRs = await instance.assertExchange(testExchange, 'direct');
+  logger.debug(assertExchangeRs);
+
+  const checkExchangeRs = await instance.checkExchange(testExchange);
+  logger.debug(checkExchangeRs);
+
+  const bindExchangeToExchangeRs = await instance.bindExchangeToExchange(testExchange, targetExchange, 'testKey');
+  logger.debug(bindExchangeToExchangeRs);
+
+  const unbindExchangeToExchangeRs = await instance.unbindExchangeToExchange(testExchange, targetExchange, 'testKey');
+  logger.debug(unbindExchangeToExchangeRs);
+
+  const deleteExchangeRs = await instance.deleteExchange(testExchange);
+  logger.debug(deleteExchangeRs);
 });

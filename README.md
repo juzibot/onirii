@@ -19,7 +19,8 @@ Universal queue SDK
 
 ### Single Function list:
 
-- [ ] Rabbit ConfirmChannel Supported
+- [ ] Rabbit ConfirmChannel Support
+- [ ] Rabbit Manager Api Full Support
 
 ## Onirii Supported Features List
 
@@ -48,9 +49,15 @@ Note:: ✓ realized ✓✓ realized and tested
 
 ### AmqpQueueInterface
 
-| Queue | assertQueue | getQueueSimpleStatus | bindQueue | unbindQueue |
+| Queue | assertQueue | getQueueStatus | bindQueue | unbindQueue |
 | :----: | :-----: | :----: | :----: | :----: |
 | RabbitMQ | ✓✓ | ✓✓ | ✓✓ | ✓✓ |
+
+### AmqpExchangeInterface
+
+| Queue | assertExchange | checkExchange | deleteExchange | bindExchange | unbindExchange |  
+| :----: | :-----: | :----: | :----: | :----: |  :----: |
+| RabbitMQ |  |  |  |  |  |
 
 ## SDK Description
 

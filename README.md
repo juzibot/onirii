@@ -10,7 +10,8 @@ Universal queue SDK
 - [x] AmazonSQS (Developing)
 - [ ] CMQ (Waiting)
 - [ ] CKafka (Waiting)
-- [ ] DTMQ (Waiting)
+- [ ] TDMQ (Waiting)
+- [ ] TubeMQ (Terminated) 
 - [ ] JCQ (Waiting)
 - [ ] Kafka (Waiting)
 - [ ] MQTT (Waiting)
@@ -24,18 +25,18 @@ Universal queue SDK
 
 ## Onirii Supported Features List
 
-| Queue | Queue | Message | Permission | Tag | Other | SDK | Api | Remark |
-| :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
-| ActiveMQ | ? | ? | ? | ? | ? | ? | ? |  |
-| AmazonSQS | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |  |  |
-| CMQ | ? | ? | ? | ? | ? | ? | ? |  |
-| CKafka | ? | ? | ? | ? | ? | ? | ? |  |
-| DTMQ | ? | ? | ? | ? | ? | ? | ? |  |
-| JCQ | ? | ? | ? | ? | ? | ? | ? |  |
-| Kafka | ? | ? | ? | ? | ? | ? | ? |  |
-| MQTT | ? | ? | ? | ? | ? | ? | ? |  |
-| RocketMQ | ? | ? | ? | ? | ? | ? | ? |  |
-| RabbitMQ | ? | ? | ? | ? | ? | ? | ? |  |
+| Queue | Queue | Exchange | Message | Permission | Tag | Other | SDK | Api | Remark |
+| :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
+| ActiveMQ |  |  |  |  |  |  |  |  |  |
+| AmazonSQS | ✓ | x | ✓ | ✓ | ✓ | ✓ | ✓ |  |  |
+| CMQ |  |  |  |  |  |  |  |  |  |
+| CKafka |  |  |  |  |  |  |  |  |  |
+| TDMQ |  |  |  |  |  |  |  |  |  |
+| JCQ |  |  |  |  |  |  |  |  |  |
+| Kafka |  |  |  |  |  |  |  |  |  |
+| MQTT |  |  |  |  |  |  |  |  |  |
+| RocketMQ |  |  |  |  |  |  |  |  |  |
+| RabbitMQ | ✓ | ✓ | ✓ | ✓ |  |  |  |  |  |
 
 ## Developing Status
 
@@ -57,7 +58,7 @@ Note:: ✓ realized ✓✓ realized and tested
 
 | Queue | assertExchange | checkExchange | deleteExchange | bindExchange | unbindExchange |  
 | :----: | :-----: | :----: | :----: | :----: |  :----: |
-| RabbitMQ |  |  |  |  |  |
+| RabbitMQ | ✓✓ | ✓✓ | ✓✓ | ✓✓ | ✓✓ |
 
 ## SDK Description
 

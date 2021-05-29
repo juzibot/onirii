@@ -3,14 +3,14 @@ import { Replies } from 'amqplib/properties';
 import { Logger } from 'log4js';
 import { PublicConfigLoader } from '../config/public-config-loader';
 import { AmqpQueueInterface } from '../interface/amqp-queue-interface';
-import { OriginalMessageInterface } from '../interface/original-message-interface';
-import OriginalQueueInterface from '../interface/original-queue-interface';
 import { PublicConfigModel } from '../model/public-config-model';
 import { QueueEnum } from '../model/queue-enum';
 import { AmqpConnectUtil } from '../util/amqp-connect-util';
+import { AmqpExchangeInterface } from '../interface/amqp-exchange-interface';
+import { AmqpMessageInterface } from '../interface/amqp-message-interface';
 import AssertQueue = Options.AssertQueue;
 
-export class AmqpImpl implements OriginalQueueInterface, AmqpQueueInterface, OriginalMessageInterface {
+export class AmqpImpl implements AmqpQueueInterface, AmqpExchangeInterface, AmqpMessageInterface {
   // logger
   // @ts-ignore
   private readonly logger: Logger | undefined;
@@ -34,7 +34,6 @@ export class AmqpImpl implements OriginalQueueInterface, AmqpQueueInterface, Ori
    * @param name
    * @param queueType
    * @param url
-   * @param amqpOptions
    */
   constructor(name: string, queueType: QueueEnum, url?: string) {
     this.currentAmqpUrl = url;
@@ -63,70 +62,44 @@ export class AmqpImpl implements OriginalQueueInterface, AmqpQueueInterface, Ori
     this.defaultChannel = await this.amqpInstance.createChannel();
   }
 
-  /**
-   * amqp protocol not support create queue
-   */
-  createQueue(): void {
-    throw new Error('Amqp not Supported Create Queue Operation Try Use createQueueByManager()');
-  }
-
-  /**
-   * amqp protocol not support get queue
-   */
-  getQueue(): void {
-    throw new Error('Amqp not Supported Get Queue Operation Try Use assertQueue() or getQueueSimpleStatus()');
-  }
-
-  async deleteQueue(name: string, options?: Options.DeleteQueue): Promise<Replies.DeleteQueue> {
-    return await this.defaultChannel!.deleteQueue(name, options);
-  }
-
-  async purgeQueue(name: string): Promise<Replies.PurgeQueue> {
-    return await this.defaultChannel!.purgeQueue(name);
-  }
-
   async assertQueue(name: string, options?: AssertQueue): Promise<Replies.AssertQueue> {
     return await this.defaultChannel!.assertQueue(name, options);
   }
 
-  async getQueueSimpleStatus(name: string): Promise<Replies.AssertQueue> {
+  async getQueueStatus(name: string): Promise<Replies.AssertQueue> {
     return await this.defaultChannel!.checkQueue(name);
   }
 
-  async bindQueueExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty> {
+  async bindQueueToExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty> {
     return await this.defaultChannel!.bindQueue(name, exchange, bindKey, args);
   }
 
-  async unbindQueueExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty> {
+  async unbindQueueToExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty> {
     return await this.defaultChannel!.unbindQueue(name, exchange, bindKey, args);
   }
 
-  async sendMessage(targetExchange: string, key: string, message: any, options: Options.Publish): Promise<boolean> {
-    return this.defaultChannel!.publish(targetExchange, key, message, options);
+  async assertExchange(name: string, type: string, options?: Options.AssertExchange): Promise<Replies.AssertExchange> {
+    return await this.defaultChannel!.assertExchange(name, type, options);
   }
 
-  sendMessageBatch<T>(): T {
-    throw new Error('Method not implemented.');
+  async checkExchange(name: string): Promise<Replies.Empty> {
+    return await this.defaultChannel!.checkExchange(name);
   }
 
-  receiveMessage<T>(): T {
-    throw new Error('Method not implemented.');
+  async deleteExchange(name: string, options?: Options.DeleteExchange): Promise<Replies.Empty> {
+    return await this.defaultChannel!.deleteExchange(name, options);
   }
 
-  deleteMessage<T>(): T {
-    throw new Error('Method not implemented.');
+  async bindExchangeToExchange(target: string, from: string, key: string, args?: any): Promise<Replies.Empty> {
+    return await this.defaultChannel!.bindExchange(target, from, key, args);
   }
 
-  deleteMessageBatch<T>(): T {
-    throw new Error('Method not implemented.');
+  async unbindExchangeToExchange(target: string, from: string, key: string, args?: any): Promise<Replies.Empty> {
+    return await this.defaultChannel!.unbindExchange(target, from, key, args);
   }
 
-  changeMessageVisibility<T>(): T {
-    throw new Error('Method not implemented.');
-  }
-
-  changeMessageVisibilityBatch<T>(): T {
-    throw new Error('Method not implemented.');
+  async sendMessageToExchange(exchangeName: string, key: string, content: Buffer, options: Options.Publish): Promise<Boolean> {
+    return this.defaultChannel!.publish(exchangeName, key, content, options);
   }
 
 }

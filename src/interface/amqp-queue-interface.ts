@@ -5,10 +5,10 @@ export interface AmqpQueueInterface {
 
   assertQueue(name: string, options?: AssertQueue): Promise<Replies.AssertQueue>,
 
-  getQueueSimpleStatus(name: string): Promise<Replies.AssertQueue>,
+  getQueueStatus(name: string): Promise<Replies.AssertQueue>,
 
-  bindQueueExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty>;
+  bindQueueToExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty>;
 
-  unbindQueueExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty>,
+  unbindQueueToExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty>,
 
 }

@@ -1,10 +1,10 @@
-import { RabbitMqService } from '../../src/service/rabbit-mq-service';
+import { RabbitNativeService } from '../../src/service/rabbit-native-service';
 import { LogFactory } from '../../src/factory/log-factory';
 
 const logger = LogFactory.getLogger('rabbit-mq-service-test');
 
 test('rabbit-mq-original-queue-interface-test', async () => {
-  const instance = new RabbitMqService('test-rabbit');
+  const instance = new RabbitNativeService('test-rabbit');
   await instance.ready();
 
   try {

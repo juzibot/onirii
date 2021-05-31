@@ -1,16 +1,16 @@
-import { AmqpImpl } from '../../src/components/amqp-impl';
+import { AmqpService } from '../../src/service/amqp-service';
 import { LogFactory } from '../../src/factory/log-factory';
 import { QueueEnum } from '../../src/model/queue-enum';
 
 const logger = LogFactory.getLogger('amqp-impl-test');
 
 test('amqp-impl-connect', async () => {
-  const instance = new AmqpImpl('test-amqp-impl', QueueEnum.RABBIT);
+  const instance = new AmqpService('test-amqp-impl', QueueEnum.RABBIT);
   await instance.ready();
 });
 
 test('amqp-impl-amqp-queue-interface-test', async () => {
-  const instance = new AmqpImpl('test-amqp-impl', QueueEnum.RABBIT);
+  const instance = new AmqpService('test-amqp-impl', QueueEnum.RABBIT);
   await instance.ready();
 
   const assertQueueRs = await instance.assertQueue('testQueue');
@@ -30,7 +30,7 @@ test('amqp-impl-amqp-exchange-interface-test', async () => {
   const testExchange = 'testExchange';
   const targetExchange = 'targetExchange2';
 
-  const instance = new AmqpImpl('test-amqp-impl', QueueEnum.RABBIT);
+  const instance = new AmqpService('test-amqp-impl', QueueEnum.RABBIT);
   await instance.ready();
 
   const assertExchangeRs = await instance.assertExchange(testExchange, 'direct');

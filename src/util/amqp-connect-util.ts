@@ -23,10 +23,11 @@ export class AmqpConnectUtil {
    */
   public static async createConnect(url: string, options?: any): Promise<Connection> {
     this.logger.info(`Creating Connection To Amqp Server: ${url} options: ${options || 'null'}`);
-    if (options) {
-      return await amqp.connect(url, options);
+    try {
+      return options ? await amqp.connect(url, options) : await amqp.connect(url);
+    } catch (err) {
+      throw err;
     }
-    return await amqp.connect(url);
   }
 
 }

@@ -22,6 +22,7 @@ Universal queue SDK
 
 - [ ] Rabbit ConfirmChannel Support
 - [ ] Rabbit Manager Api Full Support
+- [ ] Set Max Channel Count When Creating Connection
 
 ## Onirii Supported Features List
 

@@ -7,8 +7,12 @@ export class ApiRequestUtil {
   // logger
   private static readonly logger = LogFactory.getLogger('api-requester');
 
-  public static async getRequest(url: string, jsonStringify = true, params?: {}, header?: string[]): Promise<any> {
-    const { statusCode, data, headers } = await curly.get(url, this.generateOptions(jsonStringify, params, header));
+  public static async getRequest(url: string, params?: {}, header?: string[]): Promise<any> {
+    const {
+      statusCode,
+      data,
+      headers,
+    } = await curly.get(this.generateParams(url, params), this.generateOptions(false, undefined, header));
     return this.analRs(url, params, header, statusCode, data, headers);
   }
 
@@ -23,8 +27,12 @@ export class ApiRequestUtil {
     return this.analRs(url, params, header, statusCode, data, headers);
   }
 
-  public static async deleteRequest(url: string, jsonStringify = true, params?: {}, header?: string[]): Promise<any> {
-    const { statusCode, data, headers } = await curly.delete(url, this.generateOptions(jsonStringify, params, header));
+  public static async deleteRequest(url: string, params?: {}, header?: string[]): Promise<any> {
+    const {
+      statusCode,
+      data,
+      headers,
+    } = await curly.delete(this.generateParams(url, params), this.generateOptions(false, undefined, header));
     return this.analRs(url, params, header, statusCode, data, headers);
   }
 
@@ -41,6 +49,19 @@ export class ApiRequestUtil {
 
   public static mergeHeader(arg1: string[], ...args: string[]) {
     return arg1.push(...args);
+  }
+
+  private static generateParams(url: string, params: any) {
+    if (!params) {
+      return url;
+    }
+    let finUrl = url + '?';
+    Object.entries(params).forEach(element => {
+      const [key, value] = element;
+      finUrl += `${key}=${value}&`;
+    });
+    console.log(finUrl.substring(0, finUrl.length - 1));
+    return finUrl.substring(0, finUrl.length - 1);
   }
 
   public static analRs(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]) {

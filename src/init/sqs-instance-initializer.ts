@@ -28,7 +28,7 @@ export default class SqsInstanceInitializer {
    */
   constructor(specificMode = false, customConfig?: AWS.SQS.ClientConfiguration) {
     SqsInstanceInitializer.logger.info(`Creating Amazon SQS queue at:${DateUtil.getTimestamp()}`);
-    const basicConfig = PublicConfigLoader.getNecessaryConfig(specificMode ? QueueEnum.SQS : undefined);
+    const basicConfig = PublicConfigLoader.getNecessaryConfig('', specificMode ? QueueEnum.SQS : undefined);
     if (customConfig) {
       this.queue = new AWS.SQS(PublicConfigLoader.mergeConfig(basicConfig, customConfig));
       return;

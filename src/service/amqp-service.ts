@@ -61,7 +61,17 @@ export class AmqpService implements AmqpQueueInterface, AmqpExchangeInterface, A
       throw new Error(`${this.name}-${this.queueType} Missing amqp server config`);
     }
     this.amqpInstance = await AmqpConnectUtil.createConnect(this.currentAmqpUrl, amqpOptions);
-    this.defaultChannel = await this.amqpInstance.createChannel();
+    this.defaultChannel = await this.createChannel();
+  }
+
+  /**
+   * Create New Channel This Channel Can Use For Custom Operation But Not Influence Amqp-Instance Default Channel(Confirm Channel)
+   *
+   * @param {boolean} confirm if set true create confirm channel (default: false)
+   * @return {Promise<Channel>} new channel
+   */
+  async createChannel(confirm = false): Promise<Channel> {
+    return confirm ? await this.amqpInstance!.createConfirmChannel() : await this.amqpInstance!.createChannel();
   }
 
   async assertQueue(name: string, options?: AssertQueue): Promise<Replies.AssertQueue> {

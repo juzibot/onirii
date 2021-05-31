@@ -1,17 +1,20 @@
 import { Logger } from 'log4js';
 import { PublicConfigLoader } from '../config/public-config-loader';
 import { LogFactory } from '../factory/log-factory';
-import { RabbitManagerVhostInterface } from '../interface/api/rabbit-manager/rabbit-manager-vhost-interface';
 import { RabbitManagerHealthInterface } from '../interface/api/rabbit-manager/rabbit-manager-health-interface';
+import { RabbitManagerVhostInterface } from '../interface/api/rabbit-manager/rabbit-manager-vhost-interface';
 import {
-  CreateVHostParams,
+  CreateVhostParams,
   HealthCheckBaseRs,
   HealthCheckPortRs,
   HealthCheckProtocolRs,
-  vHostDataModel,
+  vhostChannelRs,
+  vhostConnectionsRs,
+  vhostDataModel,
 } from '../model/rebbit-manager-model';
 import { ApiRequestUtil } from '../util/api-request-util';
 import { RabbitNativeService } from './rabbit-native-service';
+import { RabbitRequestPaginationParams } from '../model/rabbit/rabbit-request-params-model';
 
 export class RabbitManagerService extends RabbitNativeService implements RabbitManagerHealthInterface, RabbitManagerVhostInterface {
   // logger
@@ -46,7 +49,6 @@ export class RabbitManagerService extends RabbitNativeService implements RabbitM
   async checkAlarms(): Promise<any> {
     return await ApiRequestUtil.getRequest(
         `${this.managerApi}/health/checks/alarms`,
-        true,
         undefined,
         [this.auth!],
     );
@@ -55,7 +57,6 @@ export class RabbitManagerService extends RabbitNativeService implements RabbitM
   async checkLocalAlarms(): Promise<any> {
     return await ApiRequestUtil.getRequest(
         `${this.managerApi}/health/checks/local-alarms`,
-        true,
         undefined,
         [this.auth!],
     );
@@ -64,7 +65,6 @@ export class RabbitManagerService extends RabbitNativeService implements RabbitM
   async checkCertificate(leftTime: number, unit: 'days' | 'weeks' | 'months' | 'years'): Promise<any> {
     return await ApiRequestUtil.getRequest(
         `${this.managerApi}/health/checks/certificate-expiration/${leftTime}/${unit}`,
-        true,
         undefined,
         [this.auth!],
     );
@@ -73,7 +73,6 @@ export class RabbitManagerService extends RabbitNativeService implements RabbitM
   async checkPortHealth(port: number): Promise<HealthCheckPortRs> {
     return await ApiRequestUtil.getRequest(
         `${this.managerApi}/health/checks/port-listener/${port}`,
-        true,
         undefined,
         [this.auth!],
     );
@@ -82,7 +81,6 @@ export class RabbitManagerService extends RabbitNativeService implements RabbitM
   async checkNodeMirrorSyncCritical(): Promise<HealthCheckBaseRs> {
     return await ApiRequestUtil.getRequest(
         `${this.managerApi}/health/checks/node-is-mirror-sync-critical`,
-        true,
         undefined,
         [this.auth!],
     );
@@ -91,7 +89,6 @@ export class RabbitManagerService extends RabbitNativeService implements RabbitM
   async checkNodeQuorumCritical(): Promise<HealthCheckBaseRs> {
     return await ApiRequestUtil.getRequest(
         `${this.managerApi}/health/checks/node-is-quorum-critical`,
-        true,
         undefined,
         [this.auth!],
     );
@@ -100,7 +97,6 @@ export class RabbitManagerService extends RabbitNativeService implements RabbitM
   async checkProtocol(name: 'amqp091' | 'amqp10' | 'mqtt' | 'stomp' | 'web-mqtt' | 'web-stomp'): Promise<HealthCheckProtocolRs> {
     return await ApiRequestUtil.getRequest(
         `${this.managerApi}/health/checks/protocol-listener/${name}`,
-        true,
         undefined,
         [this.auth!],
     );
@@ -109,13 +105,12 @@ export class RabbitManagerService extends RabbitNativeService implements RabbitM
   checkVirtualHosts(): Promise<any> {
     return ApiRequestUtil.getRequest(
         `${this.managerApi}/health/checks/virtual-hosts`,
-        true,
         undefined,
         [this.auth!],
     );
   }
 
-  async createVhost(name: string, params: CreateVHostParams): Promise<boolean> {
+  async createVhost(name: string, params?: CreateVhostParams): Promise<boolean> {
     const rs = await ApiRequestUtil.putRequest(
         `${this.managerApi}/vhosts/${name}`,
         true,
@@ -125,19 +120,48 @@ export class RabbitManagerService extends RabbitNativeService implements RabbitM
     return rs === 201;
   }
 
-  async deleteVHost(name: string, params: CreateVHostParams): Promise<boolean> {
-    const rs = await ApiRequestUtil.getRequest(
+  async deleteVhost(name: string, params?: CreateVhostParams): Promise<boolean> {
+    return await ApiRequestUtil.deleteRequest(
         `${this.managerApi}/vhosts/${name}`,
-        true,
         params,
         [this.auth!],
     );
-    return rs === 0;
   }
 
-  async getVhost(name?: string): Promise<vHostDataModel[] | vHostDataModel> {
+  async getVhost(name?: string): Promise<vhostDataModel[] | vhostDataModel> {
     return await ApiRequestUtil.getRequest(
         `${this.managerApi}/vhosts${name ? `/${name}` : ''}`,
+        undefined,
+        [this.auth!],
+    );
+  }
+
+  async getVhostConnection(name: string): Promise<vhostConnectionsRs[]> {
+    return await ApiRequestUtil.getRequest(
+        `${this.managerApi}/vhosts/${name}/connections`,
+        undefined,
+        [this.auth!],
+    );
+  }
+
+  async getVhostOpenChannels(name: string, options?: RabbitRequestPaginationParams): Promise<vhostChannelRs[]> {
+    return await ApiRequestUtil.getRequest(
+        `${this.managerApi}/vhosts/${name}/channels`,
+        options,
+        [this.auth!],
+    );
+  }
+
+  /**
+   * TODO: test case
+   *
+   * @param {string} vhostName
+   * @param {string} nodeName
+   * @return {Promise<any>}
+   */
+  async startNode(vhostName: string, nodeName: string): Promise<any> {
+    return await ApiRequestUtil.postRequest(
+        `${this.managerApi}/api/vhosts/${vhostName}/start/${nodeName}`,
         true,
         undefined,
         [this.auth!],

@@ -2,18 +2,18 @@ import { Channel, Connection, Options } from 'amqplib';
 import { Replies } from 'amqplib/properties';
 import { Logger } from 'log4js';
 import { PublicConfigLoader } from '../config/public-config-loader';
+import { LogFactory } from '../factory/log-factory';
+import { AmqpExchangeInterface } from '../interface/amqp-exchange-interface';
+import { AmqpMessageInterface } from '../interface/amqp-message-interface';
 import { AmqpQueueInterface } from '../interface/amqp-queue-interface';
 import { PublicConfigModel } from '../model/public-config-model';
 import { QueueEnum } from '../model/queue-enum';
 import { AmqpConnectUtil } from '../util/amqp-connect-util';
-import { AmqpExchangeInterface } from '../interface/amqp-exchange-interface';
-import { AmqpMessageInterface } from '../interface/amqp-message-interface';
 import AssertQueue = Options.AssertQueue;
 
-export class AmqpImpl implements AmqpQueueInterface, AmqpExchangeInterface, AmqpMessageInterface {
+export class AmqpService implements AmqpQueueInterface, AmqpExchangeInterface, AmqpMessageInterface {
   // logger
-  // @ts-ignore
-  private readonly logger: Logger | undefined;
+  protected readonly amqpLogger: Logger | undefined;
   // current queue type
   private readonly queueType: QueueEnum;
   // current instance name
@@ -33,11 +33,13 @@ export class AmqpImpl implements AmqpQueueInterface, AmqpExchangeInterface, Amqp
    *
    * @param name
    * @param queueType
-   * @param url
+   * @param amqpUrl
    */
-  constructor(name: string, queueType: QueueEnum, url?: string) {
-    this.currentAmqpUrl = url;
-    if (!url) {
+  constructor(name: string, queueType: QueueEnum, amqpUrl?: string) {
+    this.amqpLogger = LogFactory.flush(`${name}-amqp`);
+    this.amqpLogger.info(`Creating amqp instance ${name}-amqp`);
+    this.currentAmqpUrl = amqpUrl;
+    if (!amqpUrl) {
       this.config = PublicConfigLoader.getNecessaryConfig(name, queueType);
       this.currentAmqpUrl = this.config.amqpUrl;
     }
@@ -52,7 +54,7 @@ export class AmqpImpl implements AmqpQueueInterface, AmqpExchangeInterface, Amqp
   public async ready(amqpOptions?: any) {
     // check already instanced
     if (this.amqpInstance !== undefined) {
-      this.logger!.warn(`Amqp Instance ${this.name} Already initialized Passing Operation`);
+      this.amqpLogger!.warn(`Amqp Instance ${this.name} Already initialized Passing Operation`);
     }
     //check amqp server url
     if (!this.currentAmqpUrl) {

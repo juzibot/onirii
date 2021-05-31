@@ -26,7 +26,7 @@ export class AmqpConnectionInitializer {
     //verify current config or load config from args...
     let realAmqpServerUrl: string | undefined = url;
     if (!realAmqpServerUrl) {
-      realAmqpServerUrl = PublicConfigLoader.getNecessaryConfig(name, queueType).apiUrl;
+      realAmqpServerUrl = PublicConfigLoader.getNecessaryConfig(name, queueType).managerUrl;
     }
     // create connection
     this.logger.debug(`Creating amqp connection name ${name}-${queueType} target url ${realAmqpServerUrl}`);

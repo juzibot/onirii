@@ -1,6 +1,6 @@
-import { CreateVHostParams, vHostDataModel } from '../model/rebbit-manager-model';
+import { CreateVHostParams, vHostDataModel } from '../../../model/rebbit-manager-model';
 
-export interface RabbitManagerExtends {
+export interface RabbitManagerVhostInterface {
 
   getVhost(name?: string): Promise<vHostDataModel[] | vHostDataModel>,
 

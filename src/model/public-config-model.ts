@@ -4,6 +4,6 @@ export interface PublicConfigModel {
   accessKeyId?: string;
   secretAccessKey?: string;
   amqpUrl?: string;
-  apiUrl?: string;
+  managerUrl?: string;
   apiAuth?: string;
 }

@@ -40,12 +40,13 @@ export class LogFactory {
     return log4js.getLogger(categories);
   }
 
-  public static flush(newInstanceLog: string): void {
+  public static flush(newInstanceLog: string): Logger {
     config.appenders = Object.assign(config.appenders, LogFactory.generateAppenders(newInstanceLog));
     config.categories = Object.assign(config.categories, LogFactory.generateCategories(newInstanceLog));
     if (!Object.keys(config.appenders).includes(newInstanceLog, 0)) {
       log4js.configure(config);
     }
+    return this.getLogger(newInstanceLog);
   }
 
   private static generateAppenders(newInstanceLog: string) {

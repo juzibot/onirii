@@ -1,15 +1,18 @@
-import { AmqpImpl } from '../components/amqp-impl';
-import OriginalQueueInterface from '../interface/original-queue-interface';
 import { Options } from 'amqplib';
 import { Replies } from 'amqplib/properties';
 import { OriginalMessageInterface } from '../interface/original-message-interface';
+import OriginalQueueInterface from '../interface/original-queue-interface';
 import { QueueEnum } from '../model/queue-enum';
+import { AmqpService } from './amqp-service';
 
-export class RabbitMqService extends AmqpImpl implements OriginalQueueInterface, OriginalMessageInterface {
+export class RabbitNativeService extends AmqpService implements OriginalQueueInterface, OriginalMessageInterface {
 
+  constructor(name: string, amqpUrl?: string) {
+    super(name, QueueEnum.RABBIT, amqpUrl);
+  }
 
-  constructor(name: string, url?: string) {
-    super(name, QueueEnum.RABBIT, url);
+  public async ready(amqpOptions?: any): Promise<void> {
+    await super.ready(amqpOptions);
   }
 
   /**
@@ -23,7 +26,7 @@ export class RabbitMqService extends AmqpImpl implements OriginalQueueInterface,
    * amqp protocol not support get queue
    */
   getQueue(): void {
-    throw new Error('Amqp not Supported Get Queue Operation Try Use assertQueue() or getQueueSimpleStatus()');
+    throw new Error('Amqp not Supported Get Queue Operation Try Use assertQueue() or getQueueStatus()');
   }
 
   async deleteQueue(name: string, options?: Options.DeleteQueue): Promise<Replies.DeleteQueue> {

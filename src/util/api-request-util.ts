@@ -6,9 +6,6 @@ import { LogFactory } from '../factory/log-factory';
 export class ApiRequestUtil {
   // logger
   private static readonly logger = LogFactory.getLogger('api-requester');
-  //
-  private static readonly apiRequestLogVerbose: boolean =
-      !!(process.env.API_LOG_VERBOSE && process.env.API_LOG_VERBOSE !== 'false');
 
   public static async getRequest(url: string, jsonStringify = true, params?: {}, header?: string[]): Promise<any> {
     const { statusCode, data, headers } = await curly.get(url, this.generateOptions(jsonStringify, params, header));
@@ -47,39 +44,29 @@ export class ApiRequestUtil {
   }
 
   public static analRs(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]) {
-    if (code === 200) {
-      // success
-      return data;
-    } else if (code === 201) {
-      // created
-      return code;
-    } else if (code === 204) {
-      this.logger.error('Operation Not Effected May Resource Already Exist');
-      return code;
+    switch (code) {
+      case 200: // success
+        return data;
+      case 201: // created
+        return code;
+      case 204:
+        this.logger.error('Operation Not Effected May Resource Already Exist');
+        return code;
+      case 404:
+        throw new Error(`Request Got Response Code 404 Target: ${url}`);
+      case 503:
+        throw new Error(`Manager Server Health Check Error 503 Target: ${url}`);
+      default:
+        this.logger.error(`Request ${url} with param:${JSON.stringify(params)} Got Error Code: ${code}`);
+        return {
+          url,
+          params,
+          header,
+          code,
+          data,
+          rsHeader,
+        };
     }
-    // error log
-    if (this.apiRequestLogVerbose) {
-      this.printDetailLog('DELETE', url, params, header, code, data, rsHeader);
-      return;
-    }
-    this.logger.error(`Request ${url} with param:${JSON.stringify(params)} Got Error Code: ${code}`);
-  }
-
-  private static printDetailLog(
-      requestType: string,
-      url: string,
-      params: {} | undefined,
-      requestHeader: string[] | undefined,
-      statusCode: number,
-      data: any, headers: HeaderInfo[],
-  ) {
-    this.logger.error(`Api Request Got Error: 
-          ${requestType} -- ${url}
-          params: ${JSON.stringify(params) || ''}
-          request header: ${requestHeader}
-          response code: ${statusCode}
-          response data: ${data}
-          response headers: ${JSON.stringify(headers)}`);
   }
 
 }

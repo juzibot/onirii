@@ -30,7 +30,7 @@ export class PublicConfigLoader {
       accessKeyId: queueType ? process.env[`${queueType}_ACCESS_KEY`] : process.env.ACCESS_KEY,
       secretAccessKey: queueType ? process.env[`${queueType}_SECRET_ACCESS_KEY`] : process.env.SECRET_ACCESS_KEY,
       amqpUrl: queueType ? process.env[`${queueType}_AMQP_URL`] : process.env.AMQP_URL,
-      apiUrl: queueType ? process.env[`${queueType}_API_URL`] : process.env.API_URL,
+      managerUrl: queueType ? process.env[`${queueType}_API_URL`] : process.env.API_URL,
       apiAuth: queueType ? process.env[`${queueType}_API_AUTH`] : process.env.API_AUTH,
     };
     this.logger.debug(`Loaded ${name}-${queueType} Public Config From ENV: ${JSON.stringify(publicConfig)}`);

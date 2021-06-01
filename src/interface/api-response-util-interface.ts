@@ -7,7 +7,7 @@ import { HeaderInfo } from 'node-libcurl';
  * @date 2021-05-31
  * @author Luminous(BGLuminous)
  */
-export interface ResponseAnalysisInterface {
+export interface ApiResponseUtilInterface {
 
   /**
    * analysis api get response

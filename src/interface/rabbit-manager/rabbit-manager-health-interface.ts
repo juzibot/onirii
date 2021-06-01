@@ -1,4 +1,4 @@
-import { HealthCheckBaseRs, HealthCheckPortRs, HealthCheckProtocolRs } from '../../../model/rebbit-manager-model';
+import { HealthCheckBaseRs, HealthCheckPortRs, HealthCheckProtocolRs } from '../../model/rebbit-manager-model';
 
 export interface RabbitManagerHealthInterface {
 

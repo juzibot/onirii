@@ -1,9 +1,11 @@
+/**
+ * Public Config Model, This Current Mapper Environment
+ */
 export interface PublicConfigModel {
-  apiVersion?: string;
-  region?: string;
-  accessKeyId?: string;
-  secretAccessKey?: string;
-  amqpUrl?: string;
-  managerUrl?: string;
-  apiAuth?: string;
+  // amqp server url
+  amqpServerUrl?: string,
+  // manager api url
+  managerApiUrl?: string,
+  // manager auth
+  managerAuth?: string
 }

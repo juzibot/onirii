@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk';
 import { LogFactory } from '../factory/log-factory';
-import { PublicConfigModel } from '../model/public-config-model';
+import { PublicConfigModel } from '../../src/model/public-config-model';
 import { QueueEnum } from '../model/queue-enum';
 
 /**

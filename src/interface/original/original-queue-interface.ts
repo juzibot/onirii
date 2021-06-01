@@ -1,7 +1,7 @@
 import { Options } from 'amqplib';
 import { Replies } from 'amqplib/properties';
 
-export default interface OriginalQueueInterface {
+export interface OriginalQueueInterface{
 
   createQueue(): void;
 

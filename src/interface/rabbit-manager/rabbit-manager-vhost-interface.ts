@@ -1,10 +1,10 @@
+import { RabbitRequestPaginationParams } from '../../model/rabbit-request-params-model';
 import {
   CreateVhostParams,
   vhostChannelRs,
   vhostConnectionsRs,
   vhostDataModel,
-} from '../../../model/rebbit-manager-model';
-import { RabbitRequestPaginationParams } from '../../../model/rabbit/rabbit-request-params-model';
+} from '../../model/rebbit-manager-model';
 
 export interface RabbitManagerVhostInterface {
 
@@ -19,5 +19,4 @@ export interface RabbitManagerVhostInterface {
   deleteVhost(name: string, params?: CreateVhostParams): Promise<boolean>;
 
   startNode(vhostName: string, nodeName: string): Promise<any>;
-
 }

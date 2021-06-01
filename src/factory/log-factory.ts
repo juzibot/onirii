@@ -3,57 +3,66 @@ import * as env from 'dotenv';
 import * as fs from 'fs';
 import { Logger } from 'log4js';
 
+// load env config
 env.config();
 
-const currentPath = process.env.LOG_PATH ? process.env.LOG_PATH : './';
-
-const config = {
-  appenders: {
-    console: { type: 'console', layout: { type: 'colored' } },
-    total: {
-      type: 'dateFile',
-      filename: `${currentPath}/onirii.log`,
-      pattern: '.yyyy-MM-dd',
-      keepFileExt: true,
-      encoding: 'UTF-8',
-    },
-  },
-  categories: {
-    default: {
-      appenders: ['total', 'console'],
-      level: 'debug',
-    },
-  },
-};
-
 /**
- * Log factory
+ * Log factory for create log instance
  *
- * @
+ * @since 1.0.0
+ * @date 2021-06-01
+ * @author Luminous(BGLuminous)
  */
 export class LogFactory {
-  public static getLogger(categories: string): Logger {
-    if (!fs.existsSync(currentPath)) {
-      fs.mkdirSync(currentPath);
+  // log path
+  protected static currentPath = process.env.LOG_PATH ? process.env.LOG_PATH : './';
+  // current config
+  protected static config = {
+    appenders: {
+      console: { type: 'console', layout: { type: 'colored' } },
+    },
+    categories: {},
+  };
+  // log dir ready?
+  private static dirReady: boolean = false;
+
+  /**
+   * Re-flash log4js configure and create new logger instance (this key config already exist only creat logger instace)
+   *
+   * @param {string} key new logger key
+   * @return {Logger} logger instance
+   */
+  public static create(key: string): Logger {
+    // check log dir
+    if (!this.dirReady) {
+      if (!fs.existsSync(this.currentPath)) {
+        fs.mkdirSync(this.currentPath);
+      }
+      this.dirReady = true;
     }
-    log4js.configure(config);
-    return log4js.getLogger(categories);
+    // check if exist return logger instance
+    if (Object.keys(this.config.appenders).includes(key, 0)) {
+      return log4js.getLogger(key);
+    }
+    // add new config
+    this.config.appenders = Object.assign(this.config.appenders, LogFactory.generateAppender(key));
+    this.config.categories = Object.assign(this.config.categories, LogFactory.generateCategories(key));
+    log4js.configure(this.config);
+    return log4js.getLogger(key);
   }
 
-  public static flush(newInstanceLog: string): Logger {
-    config.appenders = Object.assign(config.appenders, LogFactory.generateAppenders(newInstanceLog));
-    config.categories = Object.assign(config.categories, LogFactory.generateCategories(newInstanceLog));
-    if (!Object.keys(config.appenders).includes(newInstanceLog, 0)) {
-      log4js.configure(config);
-    }
-    return this.getLogger(newInstanceLog);
-  }
-
-  private static generateAppenders(newInstanceLog: string) {
+  /**
+   * Generate new appender config
+   *
+   * @param {string} key new logger key
+   * @return {{[p: string]: {filename: string, keepFileExt: boolean, pattern: string, type: string, encoding: string}}}
+   * @private
+   */
+  private static generateAppender(key: string) {
     return {
-      [newInstanceLog]: {
+      [key]: {
         type: 'dateFile',
-        filename: `${currentPath}/onirii-${newInstanceLog}.log`,
+        filename: `${this.currentPath}/onirii-${key}.log`,
         pattern: '.yyyy-MM-dd',
         keepFileExt: true,
         encoding: 'UTF-8',
@@ -61,12 +70,20 @@ export class LogFactory {
     };
   }
 
-  private static generateCategories(newInstanceLog: string) {
+  /**
+   * Generate new categories config
+   *
+   * @param {string} key new logger key
+   * @return {{[p: string]: {level: string, appenders: string[]}}}
+   * @private
+   */
+  private static generateCategories(key: string) {
     return {
-      [newInstanceLog]: {
-        appenders: [`${newInstanceLog}`, 'console'],
+      [key]: {
+        appenders: [`${key}`, 'console'],
         level: 'debug',
       },
     };
   }
+
 }

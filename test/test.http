@@ -1,0 +1,5 @@
+GET https://rabbit-mq-test.heavenark.cn/api/vhosts
+Accept: application/json
+Authorization: Basic test testtset123+
+
+###

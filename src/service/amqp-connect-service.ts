@@ -26,14 +26,8 @@ export class AmqpConnectService implements AmqpConnectInterface {
   public readonly currentAmqpServiceName: string;
   // connect max channel default 2048, this value can overwrite at env with MAX_CHANNEL_COUNT
   private readonly MAX_CHANNEL_COUNT = 2048;
-  // connect original channel pool
-  private channelPool: amqp.Channel[];
-  // connect original confirm chaneel pool
-  private conirmChannelPool: amqp.ConfirmChannel[];
   // connect channel pool
-  private channelServicePool: AmqpChannelService[];
-  // connect confirm channel pool
-  private confirmChannelServicePool: AmqpConfirmChannelService[];
+  private channelPool: channelListType[] = [];
 
   /**
    * Create a amqp connection service instance
@@ -77,7 +71,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
    *
    * @return {Promise<any>}
    */
-  async createChannel(): Promise<AmqpChannelService | undefined> {
+  async createChannel(): Promise<amqp.Channel | undefined> {
     if (!await this.checkChannelCount()) {
       const channel = await this.currentConnection!.createChannel();
       this.channelPool.push(channel);
@@ -93,11 +87,39 @@ export class AmqpConnectService implements AmqpConnectInterface {
    *
    * @return {Promise<void>}
    */
-  async createConfirmChannel(): Promise<amqp.ConfirmChannel> {
-    if (this.MAX_CHANNEL_COUNT) {
-
+  async createConfirmChannel(): Promise<amqp.ConfirmChannel | undefined> {
+    if (!await this.checkChannelCount()) {
+      const confirmChannel = await this.currentConnection!.createConfirmChannel();
+      this.channelPool.push(confirmChannel);
+      return confirmChannel;
+    } else {
+      this.logger.error(`Active Channels Count Exceeds Total Connection Supports: MAX:${this.MAX_CHANNEL_COUNT}`);
+      return;
     }
-    return await this.currentConnection!.createConfirmChannel();
+  }
+
+  async createChannelService(): Promise<AmqpChannelService | undefined> {
+    if (!await this.checkChannelCount()) {
+      const channel = await this.currentConnection!.createChannel();
+      const channelService = new AmqpChannelService(this.currentAmqpServiceName, channel);
+      this.channelPool.push(channelService);
+      return channelService;
+    }else{
+      this.logger.error(`Active Channels Count Exceeds Total Connection Supports: MAX:${this.MAX_CHANNEL_COUNT}`);
+      return;
+    }
+  }
+
+  async createConfirmChannelService(): Promise<AmqpConfirmChannelService | undefined> {
+    if (!await this.checkChannelCount()) {
+      const confirmChannel = await this.currentConnection!.createConfirmChannel();
+      const confirmChannelService = new AmqpConfirmChannelService(this.currentAmqpServiceName, confirmChannel);
+      this.channelPool.push(confirmChannelService);
+      return confirmChannelService;
+    }else{
+      this.logger.error(`Active Channels Count Exceeds Total Connection Supports: MAX:${this.MAX_CHANNEL_COUNT}`);
+      return;
+    }
   }
 
   /**
@@ -109,9 +131,9 @@ export class AmqpConnectService implements AmqpConnectInterface {
   }
 
   private async checkChannelCount(): Promise<boolean> {
-    const totalOpenChannelCount = this.channelPool.length + this.conirmChannelPool.length
-        + this.channelServicePool.length + this.confirmChannelServicePool.length;
-    return totalOpenChannelCount < this.MAX_CHANNEL_COUNT;
+    return this.channelPool.length < this.MAX_CHANNEL_COUNT;
   }
 
 }
+
+type channelListType = amqp.Channel | amqp.ConfirmChannel | AmqpChannelService | AmqpConfirmChannelService;

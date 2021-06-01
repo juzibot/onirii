@@ -4,13 +4,13 @@ import { AmqpConfirmChannelService } from '../../service/amqp-confirm-channel-se
 
 export interface AmqpConnectInterface {
 
-  createChannel(): Promise<AmqpChannelService | undefined>;
+  createChannel(): Promise<amqp.Channel | undefined>;
 
-  createConfirmChannel(): Promise<amqp.ConfirmChannel>;
+  createConfirmChannel(): Promise<amqp.ConfirmChannel | undefined>;
 
-  createChannelService(): Promise<AmqpChannelService>;
+  createChannelService(): Promise<AmqpChannelService | undefined>;
 
-  createConfirmChannelService(): Promise<AmqpConfirmChannelService>;
+  createConfirmChannelService(): Promise<AmqpConfirmChannelService | undefined>;
 
   close(): Promise<void>;
 

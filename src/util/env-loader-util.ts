@@ -25,6 +25,7 @@ export class EnvLoaderUtil {
       amqpServerUrl: process.env.AMQP_SERVER_URL,
       managerApiUrl: process.env.MANAGER_API_URL,
       managerAuth: process.env.MANAGER_AUTH,
+      maxChannelCount: Number(process.env.MAX_CHANNEL_COUNT),
     };
   }
 
@@ -34,7 +35,7 @@ export class EnvLoaderUtil {
    * @return {EnvLoaderUtil}
    * @constructor
    */
-  public static GetInstance(): EnvLoaderUtil {
+  public static getInstance(): EnvLoaderUtil {
     if (!this.INSTANCE) {
       this.INSTANCE = new EnvLoaderUtil();
     }

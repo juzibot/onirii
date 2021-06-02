@@ -25,9 +25,9 @@ export class AmqpConnectService implements AmqpConnectInterface {
   // current amqp service instance identify name
   public readonly currentAmqpServiceName: string;
   // connect max channel default 2048, this value can overwrite at env with MAX_CHANNEL_COUNT
-  private readonly MAX_CHANNEL_COUNT = 2048;
+  public readonly MAX_CHANNEL_COUNT: number = 2047;
   // connect channel pool
-  private channelPool: channelListType[] = [];
+  public channelPool: channelListType[] = [];
 
   /**
    * Create a amqp connection service instance
@@ -42,7 +42,12 @@ export class AmqpConnectService implements AmqpConnectInterface {
     this.logger = LogFactory.create(this.currentAmqpServiceName);
     // load amqp server url from public env file
     if (!amqpUrl) {
-      this.currentAmqpServerUrl = EnvLoaderUtil.GetInstance().getPublicConfig().amqpServerUrl;
+      this.currentAmqpServerUrl = EnvLoaderUtil.getInstance().getPublicConfig().amqpServerUrl;
+    }
+    // load max channel count if configured
+    const maxChannelCount = EnvLoaderUtil.getInstance().getPublicConfig().maxChannelCount;
+    if (maxChannelCount && !isNaN(maxChannelCount)) {
+      this.MAX_CHANNEL_COUNT = maxChannelCount;
     }
     // check
     if (!this.currentAmqpServerUrl) {
@@ -72,7 +77,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * @return {Promise<any>}
    */
   async createChannel(): Promise<amqp.Channel | undefined> {
-    if (!await this.checkChannelCount()) {
+    if (await this.checkChannelCount()) {
       const channel = await this.currentConnection!.createChannel();
       this.channelPool.push(channel);
       return channel;
@@ -88,7 +93,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * @return {Promise<void>}
    */
   async createConfirmChannel(): Promise<amqp.ConfirmChannel | undefined> {
-    if (!await this.checkChannelCount()) {
+    if (await this.checkChannelCount()) {
       const confirmChannel = await this.currentConnection!.createConfirmChannel();
       this.channelPool.push(confirmChannel);
       return confirmChannel;
@@ -98,39 +103,56 @@ export class AmqpConnectService implements AmqpConnectInterface {
     }
   }
 
+  /**
+   * Create a channel service
+   *
+   * @return {Promise<AmqpChannelService | undefined>}
+   */
   async createChannelService(): Promise<AmqpChannelService | undefined> {
-    if (!await this.checkChannelCount()) {
+    if (await this.checkChannelCount()) {
       const channel = await this.currentConnection!.createChannel();
       const channelService = new AmqpChannelService(this.currentAmqpServiceName, channel);
       this.channelPool.push(channelService);
       return channelService;
-    }else{
-      this.logger.error(`Active Channels Count Exceeds Total Connection Supports: MAX:${this.MAX_CHANNEL_COUNT}`);
-      return;
-    }
-  }
-
-  async createConfirmChannelService(): Promise<AmqpConfirmChannelService | undefined> {
-    if (!await this.checkChannelCount()) {
-      const confirmChannel = await this.currentConnection!.createConfirmChannel();
-      const confirmChannelService = new AmqpConfirmChannelService(this.currentAmqpServiceName, confirmChannel);
-      this.channelPool.push(confirmChannelService);
-      return confirmChannelService;
-    }else{
+    } else {
       this.logger.error(`Active Channels Count Exceeds Total Connection Supports: MAX:${this.MAX_CHANNEL_COUNT}`);
       return;
     }
   }
 
   /**
-   * Close connection
+   * Create confirm channel service
+   *
+   * @return {Promise<AmqpConfirmChannelService | undefined>}
+   */
+  async createConfirmChannelService(): Promise<AmqpConfirmChannelService | undefined> {
+    if (await this.checkChannelCount()) {
+      const confirmChannel = await this.currentConnection!.createConfirmChannel();
+      const confirmChannelService = new AmqpConfirmChannelService(this.currentAmqpServiceName, confirmChannel);
+      this.channelPool.push(confirmChannelService);
+      return confirmChannelService;
+    } else {
+      this.logger.error(`Active Channels Count Exceeds Total Connection Supports: MAX:${this.MAX_CHANNEL_COUNT}`);
+      return;
+    }
+  }
+
+  /**
+   * Close connection this will close all channel in this connection
+   *
    * @return {Promise<void>}
    */
   async close(): Promise<void> {
     await this.currentConnection!.close();
   }
 
-  private async checkChannelCount(): Promise<boolean> {
+  /**
+   * Check channel count
+   *
+   * @return {Promise<boolean>}
+   * @protected
+   */
+  protected async checkChannelCount(): Promise<boolean> {
     return this.channelPool.length < this.MAX_CHANNEL_COUNT;
   }
 

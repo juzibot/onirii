@@ -8,4 +8,6 @@ export interface PublicConfigModel {
   managerApiUrl?: string,
   // manager auth
   managerAuth?: string
+  // each connect max channel count
+  maxChannelCount?: number;
 }

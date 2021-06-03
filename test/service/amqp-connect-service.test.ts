@@ -1,27 +1,31 @@
 import { Logger } from 'log4js';
 import { LogFactory } from '../../src/factory/log-factory';
-import { AmqpConnectService } from '../../src/service/amqp-connect-service';
+import { AmqpConnectService } from '../../src/service/amqp/amqp-connect-service';
 
 const logger: Logger = LogFactory.create('default');
 
 test('amqp-connect-service-test', async () => {
   const connectService = new AmqpConnectService('test');
+  expect(connectService).not.toBe(undefined);
   await connectService.ready();
-  logger.debug(connectService.currentConnection!.connection);
   // multiple channel test
-  for (let x = 0; x < connectService.MAX_CHANNEL_COUNT - 2; x++) {
-    await connectService.createChannel();
+  logger.debug(connectService.MAX_CHANNEL_COUNT);
+  const channelList = [];
+  for (let x = 0; x <= connectService.MAX_CHANNEL_COUNT; x++) {
+    if (x % 2 == 0) {
+      await connectService.createChannelService(true);
+      continue;
+    }
+    if (x < 20) {
+      channelList.push(await connectService.createChannelService(true));
+    }
+    await connectService.createChannelService(false);
   }
-  // each channel/channelService creat test
-  await connectService.createConfirmChannel();
-  await connectService.createChannelService();
-  await connectService.createConfirmChannelService();
-  logger.debug(connectService.channelPool.length);
+  logger.debug(channelList);
+
   // over max channel warn test
-  expect(await connectService.createChannel()).toBe(undefined);
-  //multiple connect test
-  const connectService2 = new AmqpConnectService('test2');
-  expect(connectService2).not.toBe(undefined);
+  expect(await connectService.createChannelService(true)).toBe(undefined);
+
 });
 
 jest.setTimeout(600000);

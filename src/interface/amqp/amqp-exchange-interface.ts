@@ -3,7 +3,7 @@ import { Replies } from 'amqplib/properties';
 
 export interface AmqpExchangeInterface {
 
-  assertExchange(name: string, type: string, options?: Options.AssertExchange): Promise<Replies.AssertExchange>;
+  createExchangeIfNotExist(name: string, type: string, options?: Options.AssertExchange): Promise<Replies.AssertExchange>;
 
   checkExchange(name: string): Promise<Replies.Empty>;
 

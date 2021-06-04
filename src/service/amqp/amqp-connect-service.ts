@@ -139,23 +139,23 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * @param {string} channelName channel instance name
    * @return {Promise<void>}
    */
-  public async killChannel(channelName: string) {
+  public async killChannel(channelName: string): Promise<boolean> {
     // kill in service list
-    for (let serviceChannelPoolElement of this.serviceChannelPool) {
-      if (serviceChannelPoolElement.instanceName === channelName) {
-        await serviceChannelPoolElement.close();
-        this.serviceChannelPool = await this.serviceChannelPool.filter(element => element.instanceName !== channelName);
-        return;
-      }
+    let targetChannel: AmqpChannelService | AmqpConfirmChannelService | OriginalChannelWrapper | OriginalConfirmChannelWrapper | undefined;
+    targetChannel = this.wrapperChannelPool.find(element => element.instanceName === channelName);
+    if (targetChannel) {
+      await targetChannel.close();
+      this.serviceChannelPool = this.serviceChannelPool.filter(element => element.instanceName !== channelName);
+      return true;
     }
-    // kill in wrapper list
-    for (let wrapperChannelPoolElement of this.wrapperChannelPool) {
-      if (wrapperChannelPoolElement.instanceName === channelName) {
-        await wrapperChannelPoolElement.close();
-        this.wrapperChannelPool = await this.wrapperChannelPool.filter(element => element.instanceName !== channelName);
-        return;
-      }
+    targetChannel = this.serviceChannelPool.find(element => element.instanceName === channelName);
+    if (targetChannel) {
+      await targetChannel.close();
+      this.wrapperChannelPool = this.wrapperChannelPool.filter(element => element.instanceName !== channelName);
+      return true;
     }
+    this.logger.error(`Can't Kill Unknown Channel ${channelName}`);
+    return false;
   }
 
   /**

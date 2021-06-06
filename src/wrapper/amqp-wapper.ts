@@ -35,8 +35,8 @@ export class OriginalChannelWrapper {
    * @return {Promise<void>}
    */
   public async close() {
-    this.logger.warn(`Killing Channel ${this.instanceName}`);
     await this.channel.close();
+    this.logger.warn(`Killed Channel ${this.instanceName}`);
   }
 
 }
@@ -71,8 +71,8 @@ export class OriginalConfirmChannelWrapper {
    * @return {Promise<void>}
    */
   public async close() {
-    this.logger.warn(`Killing Channel ${this.instanceName}`);
     await this.channel.close();
+    this.logger.warn(`Killed Channel ${this.instanceName}`);
   }
 
 }
@@ -161,7 +161,7 @@ export class EnhancerConsumerWrapper {
     });
   }
 
-  private async consumer(queue: string, processor: (msg: amqp.GetMessage) => void, delay?: number, options?: Options.Get) {
+  private async consumer(queue: string, processor: (msg: amqp.GetMessage) => void, delay = 0, options?: Options.Get) {
     if (this.killed) {
       this.parentService.logger.warn(`Killed Consumer ${this.consumerName}`);
       return;
@@ -182,6 +182,7 @@ export class EnhancerConsumerWrapper {
    */
   public async kill() {
     this.killed = true;
+    await new Promise(r => setTimeout(r, 200));
   }
 
 }

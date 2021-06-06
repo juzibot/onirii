@@ -177,8 +177,8 @@ export class AmqpConnectService implements AmqpConnectInterface {
    */
   private async killWrapperChannel(): Promise<void> {
     for (let channelPoolElement of this.wrapperChannelPool) {
-      this.logger.warn(`Killing Channel ${channelPoolElement.instanceName}`);
       await channelPoolElement.channel.close();
+      this.logger.warn(`Killed Channel ${channelPoolElement.instanceName}`);
     }
   }
 
@@ -190,8 +190,8 @@ export class AmqpConnectService implements AmqpConnectInterface {
    */
   private async killServiceChannel(): Promise<void> {
     for (let channelPoolElement of this.serviceChannelPool) {
-      this.logger.warn(`Killing Channel ${channelPoolElement.instanceName}`);
       await channelPoolElement.close();
+      this.logger.warn(`Killed Channel ${channelPoolElement.instanceName}`);
     }
   }
 

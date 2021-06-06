@@ -1,6 +1,6 @@
 import amqp from 'amqplib';
-import { AmqpChannelService } from '../../src/service/amqp/amqp-channel-service';
-import { AmqpConnectService } from '../../src/service/amqp/amqp-connect-service';
+import { AmqpChannelService } from '../../../src/service/amqp/amqp-channel-service';
+import { AmqpConnectService } from '../../../src/service/amqp/amqp-connect-service';
 
 test('amqp-channel-service-test', async () => {
   const connect = new AmqpConnectService('test-connect');

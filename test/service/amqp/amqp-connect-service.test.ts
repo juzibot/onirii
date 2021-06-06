@@ -1,6 +1,6 @@
 import { Logger } from 'log4js';
-import { LogFactory } from '../../src/factory/log-factory';
-import { AmqpConnectService } from '../../src/service/amqp/amqp-connect-service';
+import { LogFactory } from '../../../src/factory/log-factory';
+import { AmqpConnectService } from '../../../src/service/amqp/amqp-connect-service';
 
 const logger: Logger = LogFactory.create('default');
 

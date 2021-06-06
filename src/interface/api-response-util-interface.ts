@@ -12,26 +12,26 @@ export interface ApiResponseUtilInterface {
   /**
    * analysis api get response
    *
-   * @return {Promise<void>}
+   * @return {<void>}
    */
-  analGet(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): Promise<any>;
+  analGet(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any;
 
   /**
    * analysis api post response
-   * @return {Promise<void>}
+   * @return {<void>}
    */
-  analPost(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): Promise<any>;
+  analPost(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any;
 
   /**
    * analysis api put response
-   * @return {Promise<void>}
+   * @return {<void>}
    */
-  analPut(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): Promise<any>;
+  analPut(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any;
 
   /**
    * analysis api delete response
-   * @return {Promise<void>}
+   * @return {<void>}
    */
-  analDelete(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): Promise<any>;
+  analDelete(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any;
 
 }

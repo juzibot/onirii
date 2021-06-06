@@ -8,7 +8,7 @@ import {
 
 export interface RabbitManagerVhostInterface {
 
-  getVhost(name?: string): Promise<vhostDataModel[] | vhostDataModel>;
+  getVhost(name?: string): Promise<vhostDataModel[] | vhostDataModel | boolean>;
 
   getVhostConnection(name: string): Promise<vhostConnectionsRs[]>;
 
@@ -16,7 +16,7 @@ export interface RabbitManagerVhostInterface {
 
   createVhost(name: string, params?: CreateVhostParams): Promise<boolean>;
 
-  deleteVhost(name: string, params?: CreateVhostParams): Promise<boolean>;
+  deleteVhost(name: string, checkImmediately?: boolean, params?: CreateVhostParams): Promise<boolean>;
 
   startNode(vhostName: string, nodeName: string): Promise<any>;
 }

@@ -1,0 +1,30 @@
+GET https://rabbit-mq-test.heavenark.cn/api/exchanges
+Accept: application/json
+Authorization: Basic test testtset123+
+
+###
+GET https://rabbit-mq-test.heavenark.cn/api/exchanges/%2F
+Accept: application/json
+Authorization: Basic test testtset123+
+
+###
+GET https://rabbit-mq-test.heavenark.cn/api/exchanges/%2F/testExchange10
+Accept: application/json
+Authorization: Basic test testtset123+
+
+###
+PUT https://rabbit-mq-test.heavenark.cn/api/exchanges/%2F/testExchange
+Accept: application/json
+Authorization: Basic test testtset123+
+
+{
+"type":"direct",
+"auto_delete":false,
+}
+
+###
+DELETE https://rabbit-mq-test.heavenark.cn/api/exchanges/%2F/testExchange?if-unused=true
+Accept: application/json
+Authorization: Basic test testtset123+
+
+###

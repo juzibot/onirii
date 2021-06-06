@@ -191,7 +191,6 @@ export class AmqpConnectService implements AmqpConnectInterface {
   private async killServiceChannel(): Promise<void> {
     for (let channelPoolElement of this.serviceChannelPool) {
       await channelPoolElement.close();
-      this.logger.warn(`Killed Channel ${channelPoolElement.instanceName}`);
     }
   }
 

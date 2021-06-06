@@ -167,7 +167,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
     await this.killWrapperChannel();
     await this.killServiceChannel();
     await this.currentConnection!.close();
-    this.logger.debug(`Amqp Server Instance ${this.instanceName} Closed`);
+    this.logger.warn(`Amqp Server Instance ${this.instanceName} Closed`);
   }
 
   /**

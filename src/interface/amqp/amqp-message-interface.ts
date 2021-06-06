@@ -28,9 +28,9 @@ export interface AmqpMessageInterface {
 
   rejectMessage(message: amqp.Message, allUp?: boolean, reQueue?: boolean): Promise<void>;
 
-  nackAll(reQueue?: boolean): Promise<void>;
+  nackAllMessage(reQueue?: boolean): Promise<void>;
 
-  prefetch(count: number, global?: boolean): Promise<Replies.Empty>;
+  setPrefetchCount(count: number, global?: boolean): Promise<Replies.Empty>;
 
   recover(): Promise<Replies.Empty>;
 

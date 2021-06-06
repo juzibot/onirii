@@ -1,11 +1,9 @@
 import * as amqp from 'amqplib';
 import { Options } from 'amqplib/properties';
 import { Logger } from 'log4js';
-import { setInterval } from 'timers';
 import { LogFactory } from '../factory/log-factory';
 import { AmqpChannelService } from '../service/amqp/amqp-channel-service';
 import { AmqpConfirmChannelService } from '../service/amqp/amqp-confirm-channel-service';
-import Timeout = NodeJS.Timeout;
 
 /**
  * Amqp Original Channel Standard Data
@@ -134,10 +132,8 @@ export class EnhancerConsumerWrapper {
   public readonly consumerName: string;
   // prent channel service
   private readonly parentService: AmqpChannelService;
-  // consumer interval instance
-  private readonly intervalInstance: Timeout | undefined;
-
-  // private count: number = 0;
+  // kill identify
+  private killed: boolean = false;
 
   /**
    * Constructor
@@ -160,17 +156,23 @@ export class EnhancerConsumerWrapper {
     this.consumerName = consumerName;
     this.parentService = parentService;
     this.parentService.logger.info(`Creating Consumer ${this.consumerName}`);
-    this.intervalInstance = setInterval(async () => {
-      const message = await this.parentService.getCurrentMessage(queue, options);
-      if (message) {
-        processor(message);
-      }
-      // this.count++;
-    }, delay);
-    // setInterval(() => {
-    //   this.parentService.logger.warn(`${this.consumerName} Processed Message Count : ${this.count}`);
-    //   this.count = 0;
-    // }, 1000);
+    this.consumer(queue, processor, delay, options).catch(err => {
+      this.parentService.logger.error(`Consumer ${this.consumerName} Got Some Error: ${err.stack}`);
+    });
+  }
+
+  private async consumer(queue: string, processor: (msg: amqp.GetMessage) => void, delay?: number, options?: Options.Get) {
+    if (this.killed) {
+      this.parentService.logger.warn(`Killed Consumer ${this.consumerName}`);
+      return;
+    }
+    // process message
+    const message = await this.parentService.getCurrentMessage(queue, options);
+    if (message) {
+      processor(message);
+    }
+    await new Promise(r => setTimeout(r, delay));
+    await this.consumer(queue, processor, delay, options);
   }
 
   /**
@@ -179,8 +181,7 @@ export class EnhancerConsumerWrapper {
    * @return {Promise<void>} --
    */
   public async kill() {
-    clearInterval(<Timeout>this.intervalInstance);
-    this.parentService.logger.warn(`Killed Consumer ${this.consumerName} Belong Channel: ${this.parentService.instanceName}`);
+    this.killed = true;
   }
 
 }

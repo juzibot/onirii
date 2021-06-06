@@ -84,7 +84,7 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
     return false;
   }
 
-  public async checkExchange(name: string): Promise<Replies.Empty> {
+  public async getExchangeStatus(name: string): Promise<Replies.Empty> {
     return await this.currentChannelInstance.checkExchange(name);
   }
 
@@ -142,15 +142,18 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   }
 
   public async rejectMessage(message: amqp.Message, allUp?: boolean, reQueue?: boolean): Promise<void> {
-    this.currentChannelInstance.nack(message, allUp, reQueue);
-    this.currentChannelInstance.reject(message, reQueue);
+    try {
+      this.currentChannelInstance.reject(message, reQueue);
+    } catch (err) {
+      this.currentChannelInstance.nack(message, allUp, reQueue);
+    }
   }
 
-  public async nackAll(reQueue?: boolean): Promise<void> {
+  public async nackAllMessage(reQueue?: boolean): Promise<void> {
     this.currentChannelInstance.nackAll(reQueue);
   }
 
-  public async prefetch(count: number, global?: boolean): Promise<Replies.Empty> {
+  public async setPrefetchCount(count: number, global?: boolean): Promise<Replies.Empty> {
     return await this.currentChannelInstance.prefetch(count, global);
   }
 

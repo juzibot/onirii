@@ -5,7 +5,7 @@ export interface AmqpExchangeInterface {
 
   createExchangeIfNotExist(name: string, type: string, options?: Options.AssertExchange): Promise<Replies.AssertExchange>;
 
-  checkExchange(name: string): Promise<Replies.Empty>;
+  getExchangeStatus(name: string): Promise<Replies.Empty>;
 
   deleteExchange(name: string, options?: Options.DeleteExchange): Promise<Replies.Empty>;
 

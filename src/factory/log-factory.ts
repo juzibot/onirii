@@ -20,8 +20,20 @@ export class LogFactory {
   protected static config = {
     appenders: {
       console: { type: 'console', layout: { type: 'colored' } },
+      default: {
+        type: 'dateFile',
+        filename: `${LogFactory.currentPath}/onirii.log`,
+        pattern: '.yyyy-MM-dd',
+        keepFileExt: true,
+        encoding: 'UTF-8',
+      },
     },
-    categories: {},
+    categories: {
+      default: {
+        appenders: [`default`, 'console'],
+        level: 'debug',
+      },
+    },
   };
   // log dir ready?
   private static dirReady: boolean = false;

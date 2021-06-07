@@ -5,7 +5,8 @@ import { LogFactory } from '../../factory/log-factory';
 import { AmqpExchangeInterface } from '../../interface/amqp/amqp-exchange-interface';
 import { AmqpMessageInterface } from '../../interface/amqp/amqp-message-interface';
 import { AmqpQueueInterface } from '../../interface/amqp/amqp-queue-interface';
-import { EnhancerConsumerWrapper, OriginalConsumerWrapper } from '../../wrapper/amqp-wapper';
+import { AmqpEnhancerConsumerWrapper } from '../../wrapper/amqp-enhancer-consumer-wrapper';
+import { AmqpOriginalConsumerWrapper } from '../../wrapper/amqp-original-consumer-wrapper';
 
 /**
  * Channel Service
@@ -22,9 +23,9 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   // current amqp channel service instance identify name
   public readonly instanceName: string;
   // original consume pool
-  private originalConsumerPool: OriginalConsumerWrapper[] = [];
+  private originalConsumerPool: AmqpOriginalConsumerWrapper[] = [];
   // original enhancer consumer pool
-  private enhancerConsumerPool: EnhancerConsumerWrapper[] = [];
+  private enhancerConsumerPool: AmqpEnhancerConsumerWrapper[] = [];
   // consumer position
   private consumerPosition: number = -1;
 
@@ -67,7 +68,7 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   }
 
   public async killConsume(consumerName: string): Promise<boolean> {
-    let targetConsumer: OriginalConsumerWrapper | EnhancerConsumerWrapper | undefined;
+    let targetConsumer: AmqpOriginalConsumerWrapper | AmqpEnhancerConsumerWrapper | undefined;
     targetConsumer = this.originalConsumerPool.find(element => element.consumerName === consumerName);
     if (targetConsumer) {
       await targetConsumer.kill();
@@ -93,9 +94,9 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   }
 
   public consume(queue: string, processor: (msg: amqp.ConsumeMessage | null) => void, options?: Options.Consume)
-      : OriginalConsumerWrapper {
+    : AmqpOriginalConsumerWrapper {
     const consumerName: string = options?.consumerTag || this.getNextConsumerName();
-    const originalConsumer = new OriginalConsumerWrapper(consumerName, this, queue, processor, options);
+    const originalConsumer = new AmqpOriginalConsumerWrapper(consumerName, this, queue, processor, options);
     this.originalConsumerPool.push(originalConsumer);
     return originalConsumer;
   }
@@ -118,17 +119,17 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
    * @param {number} delay each consumption interval time
    * @param {string} consumeName consumer identify name (identify name can use for kill consumer);
    * @param {Options.Get} options some as GetMessage() options
-   * @return {Promise<EnhancerConsumerWrapper>}
+   * @return {Promise<AmqpEnhancerConsumerWrapper>}
    */
   public async enhancerConsume(
-      queue: string,
-      processor: (msg: amqp.GetMessage) => void,
-      delay: number = 0,
-      consumeName?: string,
-      options?: Options.Get,
-  ): Promise<EnhancerConsumerWrapper> {
+    queue: string,
+    processor: (msg: amqp.GetMessage) => void,
+    delay: number = 0,
+    consumeName?: string,
+    options?: Options.Get,
+  ): Promise<AmqpEnhancerConsumerWrapper> {
     const consumerName: string = consumeName || this.getNextConsumerName();
-    const enhancerConsumer = new EnhancerConsumerWrapper(consumerName, this, queue, processor, delay, options);
+    const enhancerConsumer = new AmqpEnhancerConsumerWrapper(consumerName, this, queue, processor, delay, options);
     this.enhancerConsumerPool.push(enhancerConsumer);
     return enhancerConsumer;
   }

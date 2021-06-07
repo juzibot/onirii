@@ -5,7 +5,8 @@ import { Logger } from 'log4js';
 import { LogFactory } from '../../factory/log-factory';
 import { AmqpConnectInterface } from '../../interface/amqp/amqp-connect-interface';
 import { EnvLoaderUtil } from '../../util/env-loader-util';
-import { OriginalChannelWrapper, OriginalConfirmChannelWrapper } from '../../wrapper/amqp-wapper';
+import { AmqpOriginalChannelWrapper } from '../../wrapper/amqp-original-channel-wrapper';
+import { AmqpOriginalConfirmChannelWrapper } from '../../wrapper/amqp-original-confirm-channel-wrapper';
 import { AmqpChannelService } from './amqp-channel-service';
 import { AmqpConfirmChannelService } from './amqp-confirm-channel-service';
 
@@ -28,7 +29,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
   // connect max channel default 2048, this value can overwrite at env with MAX_CHANNEL_COUNT
   public readonly MAX_CHANNEL_COUNT: number = 2047;
   // connect channel pool
-  private wrapperChannelPool: (OriginalChannelWrapper | OriginalConfirmChannelWrapper)[] = [];
+  private wrapperChannelPool: (AmqpOriginalChannelWrapper | AmqpOriginalConfirmChannelWrapper)[] = [];
   // connect channel service pool
   private serviceChannelPool: (AmqpChannelService | AmqpConfirmChannelService)[] = [];
   // channel position
@@ -82,25 +83,25 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * Create Amqp Channel Wrapper
    *
    * @param {'true' | 'false' | boolean} confirmChannel
-   * @return {Promise<OriginalConfirmChannelWrapper | undefined>}
+   * @return {Promise<AmqpOriginalConfirmChannelWrapper | undefined>}
    */
-  public async createChannelWrapper(confirmChannel: true): Promise<OriginalConfirmChannelWrapper | undefined>;
-  public async createChannelWrapper(confirmChannel: false): Promise<OriginalChannelWrapper | undefined>;
-  public async createChannelWrapper(confirmChannel: boolean): Promise<OriginalChannelWrapper | OriginalConfirmChannelWrapper | undefined> {
+  public async createChannelWrapper(confirmChannel: true): Promise<AmqpOriginalConfirmChannelWrapper | undefined>;
+  public async createChannelWrapper(confirmChannel: false): Promise<AmqpOriginalChannelWrapper | undefined>;
+  public async createChannelWrapper(confirmChannel: boolean): Promise<AmqpOriginalChannelWrapper | AmqpOriginalConfirmChannelWrapper | undefined> {
     // check exist channel count
     if (this.checkChannelCountOvered()) {
       return;
     }
     // create confirm channel wrapper
     if (confirmChannel) {
-      const confirmChannel: OriginalConfirmChannelWrapper =
-          new OriginalConfirmChannelWrapper(await this.currentConnection!.createConfirmChannel(), this.getNextChannelName());
+      const confirmChannel: AmqpOriginalConfirmChannelWrapper =
+          new AmqpOriginalConfirmChannelWrapper(await this.currentConnection!.createConfirmChannel(), this.getNextChannelName());
       this.wrapperChannelPool.push(confirmChannel);
       return confirmChannel;
     }
     // create channel wrapper
-    const channel: OriginalChannelWrapper =
-        new OriginalChannelWrapper(await this.currentConnection!.createChannel(), this.getNextChannelName());
+    const channel: AmqpOriginalChannelWrapper =
+        new AmqpOriginalChannelWrapper(await this.currentConnection!.createChannel(), this.getNextChannelName());
     this.wrapperChannelPool.push(channel);
     return channel;
   }
@@ -141,7 +142,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
    */
   public async killChannel(channelName: string): Promise<boolean> {
     // kill in service list
-    let targetChannel: AmqpChannelService | AmqpConfirmChannelService | OriginalChannelWrapper | OriginalConfirmChannelWrapper | undefined;
+    let targetChannel: AmqpChannelService | AmqpConfirmChannelService | AmqpOriginalChannelWrapper | AmqpOriginalConfirmChannelWrapper | undefined;
     targetChannel = this.wrapperChannelPool.find(element => element.instanceName === channelName);
     if (targetChannel) {
       await targetChannel.close();

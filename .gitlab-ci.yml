@@ -3,17 +3,7 @@ variables:
   VERSION: "1.0.0-beta1"
 
 stages:
-  - mirror
   - sonar
-
-mirror:
-  stage: mirror
-  tags:
-    - build
-  script:
-    - git config --global user.name "Luminous"
-    - git config --global user.email "luminous@heavenark.com"
-    - git push --mirror https://github.com/juzibot/onirii
 
 sonar:
   stage: sonar

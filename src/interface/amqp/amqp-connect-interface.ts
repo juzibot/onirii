@@ -1,6 +1,7 @@
 import { AmqpChannelService } from '../../service/amqp/amqp-channel-service';
 import { AmqpConfirmChannelService } from '../../service/amqp/amqp-confirm-channel-service';
-import { OriginalChannelWrapper, OriginalConfirmChannelWrapper } from '../../wrapper/amqp-wapper';
+import { AmqpOriginalChannelWrapper } from '../../wrapper/amqp-original-channel-wrapper';
+import { AmqpOriginalConfirmChannelWrapper } from '../../wrapper/amqp-original-confirm-channel-wrapper';
 
 /**
  * Amqp Connect Service Interface
@@ -15,9 +16,9 @@ export interface AmqpConnectInterface {
    * Create Original Channel Wrapper
    *
    * @param {boolean} confirmChannel confirmChannel?
-   * @return {Promise<> | Promise<OriginalConfirmChannelWrapper>}
+   * @return {Promise<> | Promise<AmqpOriginalChannelWrapper | AmqpOriginalConfirmChannelWrapper>}
    */
-  createChannelWrapper(confirmChannel: boolean): Promise<OriginalChannelWrapper | OriginalConfirmChannelWrapper | undefined>;
+  createChannelWrapper(confirmChannel: boolean): Promise<AmqpOriginalChannelWrapper | AmqpOriginalConfirmChannelWrapper | undefined>;
 
   /**
    * Create Amqp Channel Service

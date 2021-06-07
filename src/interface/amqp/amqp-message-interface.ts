@@ -1,6 +1,7 @@
 import amqp from 'amqplib';
 import { Options, Replies } from 'amqplib/properties';
-import { EnhancerConsumerWrapper, OriginalConsumerWrapper } from '../../wrapper/amqp-wapper';
+import { AmqpEnhancerConsumerWrapper } from '../../wrapper/amqp-enhancer-consumer-wrapper';
+import { AmqpOriginalConsumerWrapper } from '../../wrapper/amqp-original-consumer-wrapper';
 
 export interface AmqpMessageInterface {
 
@@ -8,7 +9,7 @@ export interface AmqpMessageInterface {
 
   sendMessageToQueue(queueName: string, content: Buffer, options?: Options.Publish): Promise<boolean>;
 
-  consume(queue: string, processor: (msg: amqp.ConsumeMessage | null) => void, options?: Options.Consume): OriginalConsumerWrapper;
+  consume(queue: string, processor: (msg: amqp.ConsumeMessage | null) => void, options?: Options.Consume): AmqpOriginalConsumerWrapper;
 
   enhancerConsume(
       queue: string,
@@ -16,7 +17,7 @@ export interface AmqpMessageInterface {
       delay: number,
       consumeName?: string,
       options?: Options.Get,
-  ): Promise<EnhancerConsumerWrapper>
+  ): Promise<AmqpEnhancerConsumerWrapper>
 
   killConsume(consumeTag: string): Promise<boolean>;
 

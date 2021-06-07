@@ -1,13 +1,18 @@
 {
   "name": "onirii",
-  "version": "1.0.0",
+  "version": "1.0.0-beta1",
   "description": "Universal queue SDK",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "lint": "eslint src src/**/*.ts",
-    "test": "jest",
-    "test-coverage": "jest --coverage"
+    "test": "jest ./test",
+    "test-coverage": "jest --coverage",
+    "tsc": "rm -rf ./dist && tsc",
+    "deploy": "npm run tsc && npm publish"
   },
+  "files": [
+    "dist/"
+  ],
   "repository": {
     "type": "git",
     "url": "https://gitlab.heavenark.com/Luminous/onirii"
@@ -16,23 +21,25 @@
   "author": "Luminous",
   "license": "MIT",
   "dependencies": {
+    "amqplib": "^0.8.0",
+    "aws-sdk": "^2.913.0",
+    "dotenv": "^10.0.0",
+    "log4js": "^6.3.0",
+    "node-libcurl": "^2.3.3",
+    "ts-jest": "^27.0.0"
+  },
+  "devDependencies": {
     "@types/amqplib": "^0.5.17",
     "@types/jest": "^26.0.23",
     "@types/node": "^15.6.1",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
     "@typescript-eslint/parser": "^4.25.0",
-    "amqplib": "^0.8.0",
-    "aws-sdk": "^2.913.0",
-    "dotenv": "^10.0.0",
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-jest": "^24.3.6",
     "eslint-plugin-prettier": "^3.4.0",
     "jest": "^27.0.1",
-    "log4js": "^6.3.0",
-    "node-libcurl": "^2.3.3",
     "prettier": "^2.3.0",
-    "ts-jest": "^27.0.0",
     "typescript": "^4.2.4"
   },
   "jest": {

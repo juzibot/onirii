@@ -5,8 +5,6 @@
     "module": "commonjs",
     "charset": "utf8",
     "declaration": true,
-    "declarationMap": true,
-    "inlineSourceMap": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -27,8 +25,11 @@
     "noUnusedParameters": true
   },
   "exclude": [
-    "test/",
-    "node_modules*"
+    "node_modules/",
+    "dist/",
+  ],
+  "include": [
+    "src/**/*.*",
   ],
   "compileOnSave": true
 }

@@ -11,6 +11,8 @@ mirror:
   tags:
     - build
   script:
+    - git config --global user.name "Luminous"
+    - git config --global user.email "luminous@heavenark.com"
     - git push --mirror https://github.com/juzibot/onirii
 
 sonar:

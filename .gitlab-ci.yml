@@ -8,7 +8,7 @@ stages:
   - sonar
 
 denpendency:
-  stage: dependency
+  stage: denpendency
   tags:
     - build
   script:

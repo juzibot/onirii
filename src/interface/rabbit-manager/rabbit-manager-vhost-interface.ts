@@ -1,22 +1,67 @@
-import { RabbitRequestPaginationParams } from '../../model/rabbit-request-params-model';
-import {
-  CreateVhostParams,
-  vhostChannelRs,
-  vhostConnectionsRs,
-  vhostDataModel,
-} from '../../model/rebbit-manager-model';
+import { RMChannel } from '../../model/rabbit-manager/rabbit-manager-channel-namespace';
+import { RMConnect } from '../../model/rabbit-manager/rabbit-manager-connect-namespace';
+import { RMVhost } from '../../model/rabbit-manager/rabbit-manager-vhost-namespace';
+import { RabbitManager } from '../../model/rabbit-manager/rebbit-manager-namespace';
 
+/**
+ * Rabbit Manager Vhost Part Interface
+ *
+ * @since 1.0.0
+ * @date 2021-05-31
+ * @author Luminous(BGLuminous)
+ */
 export interface RabbitManagerVhostInterface {
 
-  getVhost(name?: string): Promise<vhostDataModel[] | vhostDataModel | boolean>;
+  /**
+   * Get vhost status
+   *
+   * @return {Promise<vhostDataModel[] | vhostDataModel | boolean>} if cant connect to server or vhost not exist specific return [false]
+   */
+  getVhost(name?: string): Promise<RMVhost.vhostDataModel[] | RMVhost.vhostDataModel | boolean>;
 
-  getVhostConnection(name: string): Promise<vhostConnectionsRs[]>;
+  /**
+   * Get vhost all connection list
+   *
+   * @param {string} name vhost name
+   * @return {Promise<RMConnect.vhostConnectionsStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
+   */
+  getVhostConnection(name: string): Promise<RMConnect.vhostConnectionsStatus[] | boolean>;
 
-  getVhostOpenChannels(name: string, options: RabbitRequestPaginationParams): Promise<vhostChannelRs[]>;
+  /**
+   * Get vhost all opening channel list
+   *
+   * @param {string} name vhost name
+   * @param {RabbitManager.PaginationParams} options paginationParams
+   * @return {Promise<RMChannel.vhostChannelStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
+   */
+  getVhostOpenChannels(name: string, options: RabbitManager.PaginationParams): Promise<RMChannel.vhostChannelStatus[] | boolean>;
 
-  createVhost(name: string, params?: CreateVhostParams): Promise<boolean>;
+  /**
+   * Create a new vhost
+   *
+   * @param {string} name vhost name
+   * @param {CreateVhostParams} params create options
+   * @return {Promise<boolean>}
+   */
+  createVhost(name: string, params?: RMVhost.CreateVhostParams): Promise<boolean>;
 
-  deleteVhost(name: string, checkImmediately?: boolean, params?: CreateVhostParams): Promise<boolean>;
+  /**
+   * Delete vhost
+   *
+   * Note::If checkImmediately = false this method will always return true
+   *
+   * @param {string} name target vhost name
+   * @param {boolean} checkImmediately check deleted?
+   * @param {CreateVhostParams} params delete options
+   * @return {Promise<boolean>}
+   */
+  deleteVhost(name: string, checkImmediately?: boolean, params?: any): Promise<boolean>;
 
+  /**
+   * Start rabbit node
+   * @param {string} vhostName target vhost name
+   * @param {string} nodeName target node name
+   * @return {Promise<any>}
+   */
   startNode(vhostName: string, nodeName: string): Promise<any>;
 }

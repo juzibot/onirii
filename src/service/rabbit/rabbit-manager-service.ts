@@ -4,118 +4,184 @@ import { RabbitManagerExchangeInterface } from '../../interface/rabbit-manager/r
 import { RabbitManagerHealthInterface } from '../../interface/rabbit-manager/rabbit-manager-health-interface';
 import { RabbitManagerQueueInterface } from '../../interface/rabbit-manager/rabbit-manager-queue-interface';
 import { RabbitManagerVhostInterface } from '../../interface/rabbit-manager/rabbit-manager-vhost-interface';
-import { RabbitRequestPaginationParams } from '../../model/rabbit-request-params-model';
-import {
-  CreateVhostParams,
-  Exchange,
-  ExchangeStatusRsModel,
-  HealthCheckBaseRs,
-  HealthCheckPortRs,
-  HealthCheckProtocolRs,
-  vhostChannelRs,
-  vhostConnectionsRs,
-  vhostDataModel,
-} from '../../model/rebbit-manager-model';
+import { RMChannel } from '../../model/rabbit-manager/rabbit-manager-channel-namespace';
+import { RMConnect } from '../../model/rabbit-manager/rabbit-manager-connect-namespace';
+import { RMExchange } from '../../model/rabbit-manager/rabbit-manager-exchange-namespace';
+import { RMHealth } from '../../model/rabbit-manager/rabbit-manager-health-namespace';
+import { RMVhost } from '../../model/rabbit-manager/rabbit-manager-vhost-namespace';
+import { RabbitManager } from '../../model/rabbit-manager/rebbit-manager-namespace';
 import { ApiRequestUtil } from '../../util/api-request-util';
 import { RabbitManagerResponseUtil } from '../../util/api-response/rabbit-manager-response-util';
+import { EnvLoaderUtil } from '../../util/env-loader-util';
 
 export class RabbitManagerService implements RabbitManagerHealthInterface, RabbitManagerVhostInterface,
-    RabbitManagerExchangeInterface, RabbitManagerQueueInterface {
+  RabbitManagerExchangeInterface, RabbitManagerQueueInterface {
   // logger
   private readonly logger: Logger;
-
-  private readonly managerApi: string;
-
+  // manager api
+  private readonly managerApi: string | undefined;
+  // manager api basic auth
   private readonly managerAuth: string;
-
+  // manger service identify name
   private readonly instanceName: string;
-
+  // current manager api requester (include response analyzer)
   private readonly apiRequester: ApiRequestUtil;
 
-  constructor(name: string, managerApi: string, auth: string) {
+  /**
+   * Constructor
+   *
+   * @param {string} name identify name
+   * @param {string} managerApi manager api
+   * @param {string} auth manager auth
+   */
+  constructor(name: string, managerApi?: string, auth?: string) {
     this.instanceName = name;
     this.logger = LogFactory.create(`${this.instanceName}-manager-service`);
     this.apiRequester = new ApiRequestUtil(new RabbitManagerResponseUtil(this.logger));
     this.managerApi = managerApi;
-    this.managerAuth = `Authorization: Basic ${Buffer.from(auth).toString('base64')}`;
-  }
-
-  public async ready(check = true) {
-    if (check) {
-      await this.checkAlarms();
+    if (!this.managerApi) {
+      this.managerApi = EnvLoaderUtil.getInstance().getPublicConfig().managerApiUrl;
     }
+    let currentAuth = auth;
+    if (!currentAuth) {
+      currentAuth = EnvLoaderUtil.getInstance().getPublicConfig().managerAuth;
+    }
+    if (!this.managerApi || !currentAuth) {
+      throw new Error('Must Specific Manager ApiUrl And Auth, You Can Defined At Env Or Params');
+    }
+    this.managerAuth = `Authorization: Basic ${Buffer.from(currentAuth).toString('base64')}`;
   }
 
+  /**
+   * Check target manager service status, this method is not a necessary init method just for check
+   *
+   * @return {Promise<void>}
+   */
+  public async ready(): Promise<boolean> {
+    return await this.checkAlarms() !== false;
+  }
+
+  /**
+   * Get all system alarms
+   *
+   * @return {Promise<any>} if cant connect to server specific return [false]
+   */
   async checkAlarms(): Promise<any> {
     return await this.apiRequester.getRequest(
-        `${this.managerApi}/health/checks/alarms`,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/health/checks/alarms`,
+      undefined,
+      [this.managerAuth],
     );
   }
 
+  /**
+   * Check all local alarms
+   *
+   * @return {Promise<any>} if cant connect to server specific return [false]
+   */
   async checkLocalAlarms(): Promise<any> {
     return await this.apiRequester.getRequest(
-        `${this.managerApi}/health/checks/local-alarms`,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/health/checks/local-alarms`,
+      undefined,
+      [this.managerAuth],
     );
   }
 
+  /**
+   * Check Certificate
+   *
+   * @param {number} leftTime left expire time
+   * @param {"days" | "weeks" | "months" | "years"} unit time unit
+   * @return {Promise<any>} if cant connect to server specific return [false]
+   */
   async checkCertificate(leftTime: number, unit: 'days' | 'weeks' | 'months' | 'years'): Promise<any> {
     return await this.apiRequester.getRequest(
-        `${this.managerApi}/health/checks/certificate-expiration/${leftTime}/${unit}`,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/health/checks/certificate-expiration/${leftTime}/${unit}`,
+      undefined,
+      [this.managerAuth],
     );
   }
 
-  async checkPortHealth(port: number): Promise<HealthCheckPortRs> {
+  /**
+   * Check port health
+   *
+   * @param {number} port target port
+   * @return {Promise<HealthCheckPortRs | boolean>} if cant connect to server specific return [false]
+   */
+  async checkPortHealth(port: number): Promise<RMHealth.HealthCheckPortRs | boolean> {
     return await this.apiRequester.getRequest(
-        `${this.managerApi}/health/checks/port-listener/${port}`,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/health/checks/port-listener/${port}`,
+      undefined,
+      [this.managerAuth],
     );
   }
 
-  async checkNodeMirrorSyncCritical(): Promise<HealthCheckBaseRs> {
+  /**
+   * Check node mirror sync status
+   *
+   * @return {Promise<HealthCheckBaseRs | boolean>} if cant connect to server specific return [false]
+   */
+  async checkNodeMirrorSyncCritical(): Promise<RMHealth.HealthCheckBaseRs | boolean> {
     return await this.apiRequester.getRequest(
-        `${this.managerApi}/health/checks/node-is-mirror-sync-critical`,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/health/checks/node-is-mirror-sync-critical`,
+      undefined,
+      [this.managerAuth],
     );
   }
 
-  async checkNodeQuorumCritical(): Promise<HealthCheckBaseRs> {
+  /**
+   * Check node quorum status
+   *
+   * @return {Promise<HealthCheckBaseRs | boolean>} if cant connect to server specific return [false]
+   */
+  async checkNodeQuorumCritical(): Promise<RMHealth.HealthCheckBaseRs> {
     return await this.apiRequester.getRequest(
-        `${this.managerApi}/health/checks/node-is-quorum-critical`,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/health/checks/node-is-quorum-critical`,
+      undefined,
+      [this.managerAuth],
     );
   }
 
-  async checkProtocol(name: 'amqp091' | 'amqp10' | 'mqtt' | 'stomp' | 'web-mqtt' | 'web-stomp'): Promise<HealthCheckProtocolRs> {
+  /**
+   * check server protocol status
+   *
+   * @param {"amqp091" | "amqp10" | "mqtt" | "stomp" | "web-mqtt" | "web-stomp"} name target protocol
+   * @return {Promise<HealthCheckProtocolRs | boolean>} if cant connect to server specific return [false]
+   */
+  public async checkProtocol(name: 'amqp091' | 'amqp10' | 'mqtt' | 'stomp' | 'web-mqtt' | 'web-stomp'): Promise<RMHealth.HealthCheckProtocolRs | boolean> {
     return await this.apiRequester.getRequest(
-        `${this.managerApi}/health/checks/protocol-listener/${name}`,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/health/checks/protocol-listener/${name}`,
+      undefined,
+      [this.managerAuth],
     );
   }
 
+  /**
+   * Check all vhost status
+   *
+   * @return {Promise<any>} if cant connect to server specific return [false]
+   */
   checkVirtualHosts(): Promise<any> {
     return this.apiRequester.getRequest(
-        `${this.managerApi}/health/checks/virtual-hosts`,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/health/checks/virtual-hosts`,
+      undefined,
+      [this.managerAuth],
     );
   }
 
-  async createVhost(name: string, params?: CreateVhostParams): Promise<boolean> {
+  /**
+   * Create a new vhost
+   *
+   * @param {string} name vhost name
+   * @param {CreateVhostParams} params create options
+   * @return {Promise<boolean>}
+   */
+  async createVhost(name: string, params?: RMVhost.CreateVhostParams): Promise<boolean> {
     const rs = await this.apiRequester.putRequest(
-        `${this.managerApi}/vhosts/${name}`,
-        true,
-        params,
-        [this.managerAuth],
+      `${this.managerApi}/vhosts/${name}`,
+      true,
+      params,
+      [this.managerAuth],
     );
     if (!rs) {
       this.logger.warn(`Target VHost Already Exist:${name}`);
@@ -124,7 +190,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   }
 
   /**
-   * Delete Vhost
+   * Delete vhost
    *
    * Note::If checkImmediately = false this method will always return true
    *
@@ -133,11 +199,11 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @param {CreateVhostParams} params delete options
    * @return {Promise<boolean>}
    */
-  async deleteVhost(name: string, checkImmediately = false, params?: CreateVhostParams): Promise<boolean> {
+  async deleteVhost(name: string, checkImmediately = false, params?: any): Promise<boolean> {
     const rs = await this.apiRequester.deleteRequest(
-        `${this.managerApi}/vhosts/${name}`,
-        params,
-        [this.managerAuth],
+      `${this.managerApi}/vhosts/${name}`,
+      params,
+      [this.managerAuth],
     );
     if (checkImmediately) {
       return await this.getVhost(name) === false;
@@ -145,61 +211,99 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
     return rs;
   }
 
-  public async getVhost(): Promise<vhostDataModel[]>;
-  public async getVhost(name: string): Promise<vhostDataModel | boolean>;
-  public async getVhost(name?: string): Promise<vhostDataModel[] | vhostDataModel | boolean> {
+  /**
+   * Get vhost status
+   *
+   * @return {Promise<vhostDataModel[] | vhostDataModel | boolean>} if cant connect to server or vhost not exist specific return [false]
+   */
+  public async getVhost(): Promise<RMVhost.vhostDataModel[]>;
+  public async getVhost(name: string): Promise<RMVhost.vhostDataModel | boolean>;
+  public async getVhost(name?: string): Promise<RMVhost.vhostDataModel[] | RMVhost.vhostDataModel | boolean> {
     return await this.apiRequester.getRequest(
-        `${this.managerApi}/vhosts${name ? `/${name}` : ''}`,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/vhosts${name ? `/${name}` : ''}`,
+      undefined,
+      [this.managerAuth],
     );
   }
 
-  async getVhostConnection(name: string): Promise<vhostConnectionsRs[]> {
+  /**
+   * Get vhost all connection list
+   *
+   * @param {string} name vhost name
+   * @return {Promise<RMConnect.vhostConnectionsStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
+   */
+  async getVhostConnection(name: string): Promise<RMConnect.vhostConnectionsStatus[] | boolean> {
     return await this.apiRequester.getRequest(
-        `${this.managerApi}/vhosts/${name}/connections`,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/vhosts/${name}/connections`,
+      undefined,
+      [this.managerAuth],
     );
   }
 
-  async getVhostOpenChannels(name: string, options?: RabbitRequestPaginationParams): Promise<vhostChannelRs[]> {
+  /**
+   * Get vhost all opening channel list
+   *
+   * @param {string} name vhost name
+   * @param {RabbitManager.PaginationParams} options paginationParams
+   * @return {Promise<RMChannel.vhostChannelStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
+   */
+  async getVhostOpenChannels(name: string, options?: RabbitManager.PaginationParams): Promise<RMChannel.vhostChannelStatus[] | boolean> {
     return await this.apiRequester.getRequest(
-        `${this.managerApi}/vhosts/${name}/channels`,
-        options,
-        [this.managerAuth],
+      `${this.managerApi}/vhosts/${name}/channels`,
+      options,
+      [this.managerAuth],
     );
   }
 
+  /**
+   * Start rabbit node
+   * @param {string} vhostName target vhost name
+   * @param {string} nodeName target node name
+   * @return {Promise<any>}
+   */
   async startNode(vhostName: string, nodeName: string): Promise<any> {
     return await this.apiRequester.postRequest(
-        `${this.managerApi}/vhosts/${vhostName}/start/${nodeName}`,
-        true,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/vhosts/${vhostName}/start/${nodeName}`,
+      true,
+      undefined,
+      [this.managerAuth],
     );
   }
 
-  public async getExchange(): Promise<ExchangeStatusRsModel[]>;
-  public async getExchange(vhost: string): Promise<ExchangeStatusRsModel[]>;
-  public async getExchange(vhost: string, name: string): Promise<ExchangeStatusRsModel | boolean>
-  public async getExchange(vhost?: string, name?: string): Promise<ExchangeStatusRsModel[] | ExchangeStatusRsModel | boolean> {
+  /**
+   * Get exchange status
+   *
+   * @return {Promise<RMExchange.ExchangeStatusModel[] | RMExchange.ExchangeStatusModel | boolean>} if cant connect to server or exchange    not exist specific return [false]
+   */
+  public async getExchange(): Promise<RMExchange.ExchangeStatusModel[]>;
+  public async getExchange(vhost: string): Promise<RMExchange.ExchangeStatusModel[]>;
+  public async getExchange(vhost: string, name: string): Promise<RMExchange.ExchangeStatusModel | boolean>
+  public async getExchange(vhost?: string, name?: string)
+    : Promise<RMExchange.ExchangeStatusModel[] | RMExchange.ExchangeStatusModel | boolean> {
     if (!vhost && name) {
       throw new Error('Must Specific Vhost When Getting Current Exchange');
     }
     return await this.apiRequester.getRequest(
-        `${this.managerApi}/exchanges${vhost ? `/${vhost}` : ''}${name ? `/${name}` : ''}`,
-        undefined,
-        [this.managerAuth],
+      `${this.managerApi}/exchanges${vhost ? `/${vhost}` : ''}${name ? `/${name}` : ''}`,
+      undefined,
+      [this.managerAuth],
     );
   }
 
-  public async createExchange(vhost: string, name: string, options: Exchange.CreateOptions): Promise<boolean> {
+  /**
+   * Create exchange
+   *
+   * @param {string} vhost target vhost
+   * @param {string} name new exchange name
+   * @param {RMExchange.CreateOptions} options create exchange options
+   * @return {Promise<boolean>} if already exist return false and print warn
+   */
+  public async createExchange(vhost: string, name: string, options: RMExchange.CreateOptions): Promise<boolean> {
     return await this.apiRequester.putRequest(
-        `${this.managerApi}/exchanges/${vhost}/${name}`,
-        true,
-        options,
-        [this.managerAuth],
+      `${this.managerApi}/exchanges/${vhost}/${name}`,
+      true,
+      options,
+      [this.managerAuth],
     );
   }
 
@@ -211,14 +315,19 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @param {string} vhost target vhost name
    * @param {string} name target exchange name
    * @param {boolean} checkImmediately check deleted?
-   * @param {Exchange.DeleteOptions} options delete options
+   * @param {RMExchange.DeleteOptions} options delete options
    * @return {Promise<boolean>}
    */
-  public async deleteExchange(vhost: string, name: string, checkImmediately = false, options?: Exchange.DeleteOptions): Promise<boolean> {
+  public async deleteExchange(
+    vhost: string,
+    name: string,
+    checkImmediately = false,
+    options?: RMExchange.DeleteOptions,
+  ): Promise<boolean> {
     const rs = await this.apiRequester.deleteRequest(
-        `${this.managerApi}/exchanges/${vhost}/${name}`,
-        options,
-        [this.managerAuth],
+      `${this.managerApi}/exchanges/${vhost}/${name}`,
+      options,
+      [this.managerAuth],
     );
     if (checkImmediately) {
       return await this.getExchange(vhost, name) === false;

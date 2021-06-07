@@ -3,8 +3,16 @@ variables:
   VERSION: "1.0.0-beta1"
 
 stages:
+  - denpendency
   - test
   - sonar
+
+denpendency:
+  stage: dependency
+  tags:
+    - build
+  script:
+    - npm install
 
 test:
   stage: test

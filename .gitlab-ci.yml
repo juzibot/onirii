@@ -19,7 +19,7 @@ test:
   tags:
     - build
   script:
-    - npm run test
+    - ./node_modules/jest/bin/jest ./test
 
 sonar:
   stage: sonar

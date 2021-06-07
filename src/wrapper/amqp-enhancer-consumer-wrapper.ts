@@ -63,7 +63,7 @@ export class AmqpEnhancerConsumerWrapper {
       this.parentService.logger.warn(`Killed Consumer ${this.consumerName}`);
       return;
     }
-    new Promise(async () => {
+    await new Promise(async () => {
       // process message
       const message = await this.parentService.getCurrentMessage(queue, options);
       if (message) {

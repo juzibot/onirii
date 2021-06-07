@@ -1,3 +1,4 @@
+###
 GET https://rabbit-mq-test.heavenark.cn/api/exchanges
 Accept: application/json
 Authorization: Basic test testtset123+
@@ -28,3 +29,7 @@ Accept: application/json
 Authorization: Basic test testtset123+
 
 ###
+GET https://rabbit-mq-test.heavenark.cn/api/exchanges/%2F/testExchange/bindings/source
+Accept: application/json
+Authorization: Basic test testtset123+
+

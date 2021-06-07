@@ -9,7 +9,7 @@ let connectService;
 const logger = LogFactory.create('test');
 
 test('rabbit-manager-service-test-health', async () => {
-  await managerService.ready(true);
+  await managerService.ready();
 
   logger.debug(await managerService.checkAlarms());
   logger.debug(await managerService.checkLocalAlarms());
@@ -23,6 +23,7 @@ test('rabbit-manager-service-test-health', async () => {
 
 test('rabbit-manager-service-test-vhost', async () => {
   const testHost = 'testHost';
+  let tempRs;
 
   if (await managerService.getVhost(testHost)) {
     expect(await managerService.deleteVhost(testHost)).toBe(true);
@@ -30,19 +31,37 @@ test('rabbit-manager-service-test-vhost', async () => {
   expect(await managerService.getVhost('notExist')).toBe(false);
   expect(await managerService.createVhost(testHost)).toBe(true);
   expect(await managerService.createVhost(testHost)).toBe(false);
-  expect((await managerService.getVhostConnection(testHost)).length).toBe(0);
+  tempRs = await managerService.getVhostConnection(testHost);
+  if (typeof tempRs !== 'boolean') {
+    expect(tempRs.length).toBe(0);
+  }
   connectService = new AmqpConnectService('test', `amqp://test:testtset123+@rabbit-mq-test.heavenark.cn:5672/${testHost}`);
   await connectService.ready();
   await new Promise(r => setTimeout(r, 5 * 1000));
-  expect((await managerService.getVhostConnection(testHost)).length).toBe(1);
-  expect((await managerService.getVhostOpenChannels(testHost)).length).toBe(0);
+  tempRs = await managerService.getVhostConnection(testHost);
+  if (typeof tempRs !== 'boolean') {
+    expect(tempRs.length).toBe(1);
+  }
+  tempRs = await managerService.getVhostOpenChannels(testHost);
+  if (typeof tempRs !== 'boolean') {
+    expect(tempRs.length).toBe(0);
+  }
   await connectService.createChannelService(true);
   await new Promise(r => setTimeout(r, 5 * 1000));
-  expect((await managerService.getVhostOpenChannels(testHost)).length).toBe(1);
+  tempRs = await managerService.getVhostOpenChannels(testHost);
+  if (typeof tempRs !== 'boolean') {
+    expect(tempRs.length).toBe(1);
+  }
   await connectService.close();
   await new Promise(r => setTimeout(r, 5 * 1000));
-  expect((await managerService.getVhostConnection(testHost)).length).toBe(0);
-  expect((await managerService.getVhostOpenChannels(testHost)).length).toBe(0);
+  tempRs = await managerService.getVhostConnection(testHost);
+  if (typeof tempRs !== 'boolean') {
+    expect(tempRs.length).toBe(0);
+  }
+  tempRs = await managerService.getVhostOpenChannels(testHost);
+  if (typeof tempRs !== 'boolean') {
+    expect(tempRs.length).toBe(0);
+  }
   expect(await managerService.deleteVhost(testHost)).toBe(true);
   expect(await managerService.deleteVhost(testHost, true)).toBe(true);
 
@@ -63,6 +82,6 @@ test('rabbit-manager-service-test-exchange', async () => {
     auto_delete: false,
   })).toBe(true);
   expect(await managerService.getExchange('%2F', testExchange)).not.toBe(false);
-  expect(await managerService.deleteExchange('%2F', testExchange)).toBe(true);
+  expect(await managerService.deleteExchange('%2F', testExchange, true)).toBe(true);
   expect(await managerService.getExchange('%2F', testExchange)).toBe(false);
 });

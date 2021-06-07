@@ -95,13 +95,13 @@ export class AmqpConnectService implements AmqpConnectInterface {
     // create confirm channel wrapper
     if (confirmChannel) {
       const confirmChannel: AmqpOriginalConfirmChannelWrapper =
-          new AmqpOriginalConfirmChannelWrapper(await this.currentConnection!.createConfirmChannel(), this.getNextChannelName());
+        new AmqpOriginalConfirmChannelWrapper(await this.currentConnection!.createConfirmChannel(), this.getNextChannelName());
       this.wrapperChannelPool.push(confirmChannel);
       return confirmChannel;
     }
     // create channel wrapper
     const channel: AmqpOriginalChannelWrapper =
-        new AmqpOriginalChannelWrapper(await this.currentConnection!.createChannel(), this.getNextChannelName());
+      new AmqpOriginalChannelWrapper(await this.currentConnection!.createChannel(), this.getNextChannelName());
     this.wrapperChannelPool.push(channel);
     return channel;
   }
@@ -123,13 +123,13 @@ export class AmqpConnectService implements AmqpConnectInterface {
     // create confirm channel service
     if (confirmChannel) {
       const confirmChannelService: AmqpConfirmChannelService =
-          new AmqpConfirmChannelService(this.getNextChannelName(), await this.currentConnection!.createConfirmChannel());
+        new AmqpConfirmChannelService(this.getNextChannelName(), await this.currentConnection!.createConfirmChannel());
       this.serviceChannelPool.push(confirmChannelService);
       return confirmChannelService;
     }
     // create channel service
     const channelService: AmqpChannelService =
-        new AmqpChannelService(this.getNextChannelName(), await this.currentConnection!.createChannel());
+      new AmqpChannelService(this.getNextChannelName(), await this.currentConnection!.createChannel());
     this.serviceChannelPool.push(channelService);
     return channelService;
   }
@@ -143,13 +143,13 @@ export class AmqpConnectService implements AmqpConnectInterface {
   public async killChannel(channelName: string): Promise<boolean> {
     // kill in service list
     let targetChannel: AmqpChannelService | AmqpConfirmChannelService | AmqpOriginalChannelWrapper | AmqpOriginalConfirmChannelWrapper | undefined;
-    targetChannel = this.wrapperChannelPool.find(element => element.instanceName === channelName);
+    targetChannel = this.serviceChannelPool.find(element => element.instanceName === channelName);
     if (targetChannel) {
       await targetChannel.close();
       this.serviceChannelPool = this.serviceChannelPool.filter(element => element.instanceName !== channelName);
       return true;
     }
-    targetChannel = this.serviceChannelPool.find(element => element.instanceName === channelName);
+    targetChannel = this.wrapperChannelPool.find(element => element.instanceName === channelName);
     if (targetChannel) {
       await targetChannel.close();
       this.wrapperChannelPool = this.wrapperChannelPool.filter(element => element.instanceName !== channelName);

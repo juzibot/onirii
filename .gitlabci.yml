@@ -1,0 +1,27 @@
+variables:
+  PROJECT_NAME: "Onirii"
+  VERSION: "1.0.0-beta1"
+
+stages:
+  - test
+  - sonar
+
+test:
+  stage: test
+  tags:
+    - build
+  script:
+    - npm run test
+
+sonar:
+  stage: sonar
+  tags:
+    - build
+  script:
+    - |
+      sonar-scanner \
+      -Dsonar.projectKey=$PROJECT_NAME \
+      -Dsonar.projectName=$PROJECT_NAME \
+      -Dsonar.projectVersion=$VERSION \
+      -Dsonar.host.url=https://sonar.heavenark.com \
+      -Dsonar.login=38fd4defb6216085372051f675776ad81626915b

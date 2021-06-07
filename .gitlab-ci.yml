@@ -3,22 +3,16 @@ variables:
   VERSION: "1.0.0-beta1"
 
 stages:
-  - denpendency
   - test
   - sonar
 
-denpendency:
-  stage: denpendency
+test:
+  stage: test
+  retry: 2
   tags:
     - build
   script:
     - npm install
-
-test:
-  stage: test
-  tags:
-    - build
-  script:
     - ./node_modules/jest/bin/jest ./test
 
 sonar:

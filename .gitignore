@@ -6,3 +6,5 @@ logs
 node_modules
 # jest test coverage folder
 coverage
+# dist
+dist

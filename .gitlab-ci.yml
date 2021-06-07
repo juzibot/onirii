@@ -3,17 +3,7 @@ variables:
   VERSION: "1.0.0-beta1"
 
 stages:
-  - test
   - sonar
-
-test:
-  stage: test
-  retry: 2
-  tags:
-    - build
-  script:
-    - npm install
-    - ./node_modules/jest/bin/jest ./test
 
 sonar:
   stage: sonar

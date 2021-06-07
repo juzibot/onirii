@@ -1,28 +1,44 @@
-import { Logger } from 'log4js';
-import { LogFactory } from '../src/factory/log-factory';
 import { AmqpConnectService } from '../src/service/amqp/amqp-connect-service';
-
-const logger: Logger = LogFactory.create('default');
 
 test('single-test', async () => {
   const connection = new AmqpConnectService('single-test');
   await connection.ready();
 
-  const channelService = await connection.createChannelService(false);
-  if (!channelService) {
-    return;
+  const channelPool = [];
+
+  for (let i = 0; i < 10; i++) {
+    channelPool.push(await connection.createChannelService(false));
   }
 
-  await channelService.setPrefetchCount(1);
+  channelPool[0]!.createQueueIfNotExist('aqueue');
 
-  const consumerInstance = channelService.consume('testQueue2', async (msg) => {
-    logger.debug(msg!.content.toString());
-    await channelService.ackMessage(msg!);
-  });
+  // for (let channelPoolElement of channelPool) {
+  //   new Promise(()=>{
+  //     if (!channelPoolElement) {
+  //       return;
+  //     }
+  //     for (let i = 0; i < 100000; i++) {
+  //       channelPoolElement.sendMessageToQueue('aqueue',Buffer.from(`TestData-${Date.now()}`));
+  //     }
+  //   })
+  // }
+
+  let consumerCount = 0;
+
+  for (let channelPoolElement of channelPool) {
+    if (consumerCount > 0) {
+      break;
+    }
+    channelPoolElement!.enhancerConsume('aqueue', (msg) => {
+      channelPoolElement!.ackMessage(msg);
+    });
+    consumerCount++;
+  }
+
 
   await new Promise(r => setTimeout(r, 10 * 1000));
 
-  await channelService.killConsume(consumerInstance.consumerName);
+  // await channelService.killConsume(consumerInstance.consumerName);
 
   await new Promise(r => setTimeout(r, 60 * 60 * 1000));
 });

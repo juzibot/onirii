@@ -24,6 +24,7 @@ test('amqp-channel-service-test', async () => {
 
   await defaultChannel.getQueueStatus('testQueue');
   await defaultChannel.bindQueueToExchange('testQueue', 'testExchange', 'testKey');
+  await defaultChannel.purgeQueue('testQueue');
   await defaultChannel.sendMessageToQueue('testQueue', Buffer.from('testMessage'));
   expect((await defaultChannel.getQueueStatus('testQueue')).messageCount).toBe(1);
   await defaultChannel.purgeQueue('testQueue');
@@ -42,7 +43,7 @@ test('amqp-channel-service-test', async () => {
   await new Promise(r => setTimeout(r, 5 * 1000));
 
   let position = 0;
-  const consumer = await defaultChannel.consume('testQueue', (msg) => {
+  const consumer = defaultChannel.consume('testQueue', (msg) => {
     if (msg) {
       if (position < 1) {
         defaultChannel.ackMessage(msg);
@@ -53,11 +54,12 @@ test('amqp-channel-service-test', async () => {
     }
   });
 
-  const consumer2 = await defaultChannel.enhancerConsume('testQueue', (msg) => {
+  const consumer2 = defaultChannel.enhancerConsume('testQueue', async (msg) => {
     if (msg) {
       position++;
     }
-  });
+    return true;
+  }, 500);
 
   await new Promise(r => setTimeout(r, 5 * 1000));
   expect(position).toBe(11 + 1);
@@ -78,12 +80,11 @@ test('amqp-channel-service-test', async () => {
   await defaultChannel.deleteQueue('testQueue');
   await defaultChannel.deleteExchange('testExchange');
 
-  await defaultChannel.enhancerConsume('testQueue2', (msg) => {
-    if (msg) {
-    }
-  });
+  defaultChannel.enhancerConsume('testQueue2', async (msg) => {
+    return !!msg;
+  }, 500);
 
-  await defaultChannel.consume('testQueue2', (msg) => {
+  defaultChannel.consume('testQueue2', (msg) => {
     if (msg) {
     }
   });
@@ -92,4 +93,4 @@ test('amqp-channel-service-test', async () => {
 
 });
 
-jest.setTimeout(15 * 1000);
+jest.setTimeout(2 * 60 * 1000);

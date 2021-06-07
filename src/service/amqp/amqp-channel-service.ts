@@ -113,21 +113,22 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
    * Create a enhancer consumer can control consumption time
    *
    * Note::each consumer can provide about 30 QPS
+   * Note:: if message processor return true ,current channel will auto ack this message
    *
    * @param {string} queue target queue list
-   * @param {(msg: GetMessage) => void} processor each message processor
+   * @param processor each message processor
    * @param {number} delay each consumption interval time
    * @param {string} consumeName consumer identify name (identify name can use for kill consumer);
    * @param {Options.Get} options some as GetMessage() options
    * @return {Promise<AmqpEnhancerConsumerWrapper>}
    */
-  public async enhancerConsume(
+  public enhancerConsume(
     queue: string,
-    processor: (msg: amqp.GetMessage) => void,
+    processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>,
     delay: number = 0,
     consumeName?: string,
     options?: Options.Get,
-  ): Promise<AmqpEnhancerConsumerWrapper> {
+  ): AmqpEnhancerConsumerWrapper {
     const consumerName: string = consumeName || this.getNextConsumerName();
     const enhancerConsumer = new AmqpEnhancerConsumerWrapper(consumerName, this, queue, processor, delay, options);
     this.enhancerConsumerPool.push(enhancerConsumer);

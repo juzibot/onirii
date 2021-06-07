@@ -1,5 +1,6 @@
 import amqp from 'amqplib';
 import { Options, Replies } from 'amqplib/properties';
+import { AmqpChannelService } from '../../service/amqp/amqp-channel-service';
 import { AmqpEnhancerConsumerWrapper } from '../../wrapper/amqp-enhancer-consumer-wrapper';
 import { AmqpOriginalConsumerWrapper } from '../../wrapper/amqp-original-consumer-wrapper';
 
@@ -13,11 +14,11 @@ export interface AmqpMessageInterface {
 
   enhancerConsume(
       queue: string,
-      processor: (msg: amqp.GetMessage) => void,
+      processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>,
       delay: number,
       consumeName?: string,
       options?: Options.Get,
-  ): Promise<AmqpEnhancerConsumerWrapper>
+  ): AmqpEnhancerConsumerWrapper;
 
   killConsume(consumeTag: string): Promise<boolean>;
 

@@ -39,11 +39,12 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * Create a amqp connection service instance
    *
    * @param {string} name current server identify name (this name also extend to log config).
+   * @param index connect index
    * @param {string | Options.Connect} amqpUrl specific amqp url and it should include auth info,if is undefined will
    *                                           load from env.
    */
-  constructor(name: string, amqpUrl?: string | Options.Connect) {
-    this.instanceName = `${name}-amqp-service`;
+  constructor(name: string, index?: number, amqpUrl?: string | Options.Connect) {
+    this.instanceName = `${name}-amqp-connect-${index ? index : 0}`;
     // init logger
     this.logger = LogFactory.create(this.instanceName);
     this.currentAmqpServerUrl = amqpUrl;
@@ -72,7 +73,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
     this.logger.debug(`Initialize ${this.instanceName} Creating Amqp Server: ${this.currentAmqpServerUrl}`);
     try {
       this.currentConnection = await amqp.connect(this.currentAmqpServerUrl!, options);
-      this.logger.debug(`${this.instanceName} Connected Amqp Server: ${this.instanceName}`);
+      this.logger.debug(`${this.instanceName} Connected Amqp Server`);
     } catch (err) {
       this.logger.error(`${this.instanceName} Connect Got Error: ${err.stack}`);
       throw err;

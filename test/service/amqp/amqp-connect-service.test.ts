@@ -59,11 +59,11 @@ test('amqp-connect-service-test', async () => {
 
 test('amqp-connect-service-error-test', async () => {
   try {
-    new AmqpConnectService('test2', '');
+    new AmqpConnectService('test2', 0, '');
   } catch (err) {
     expect(err).not.toBe(undefined);
   }
-  const connect = new AmqpConnectService('test3', 'https://www.heavenark.com');
+  const connect = new AmqpConnectService('test3', 0, 'https://www.heavenark.com');
   try {
     await connect.ready();
   } catch (err) {

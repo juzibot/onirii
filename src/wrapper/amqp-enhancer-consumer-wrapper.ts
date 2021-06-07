@@ -16,10 +16,12 @@ export class AmqpEnhancerConsumerWrapper {
   /**
    * Constructor
    *
+   * Note:: if message processor return true ,current channel will auto ack this message
+   *
    * @param {string} consumerName consumer identify
    * @param {AmqpChannelService} parentService parent channel service
    * @param {string} queue target queue
-   * @param {(msg: (ConsumeMessage | null)) => void} processor message processor
+   * @param processor message processor
    * @param {number} delay each message delay time (millisecond)
    * @param {Options.Consume} options message receive option
    */
@@ -27,7 +29,7 @@ export class AmqpEnhancerConsumerWrapper {
     consumerName: string,
     parentService: AmqpChannelService,
     queue: string,
-    processor: (msg: amqp.GetMessage) => void,
+    processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>,
     delay: number,
     options?: Options.Get,
   ) {
@@ -39,16 +41,39 @@ export class AmqpEnhancerConsumerWrapper {
     });
   }
 
-  private async consumer(queue: string, processor: (msg: amqp.GetMessage) => void, delay = 0, options?: Options.Get) {
+  /**
+   * Consumer Simulator
+   *
+   * Note:: if message processor return true ,current channel will auto ack this message
+   *
+   * @param {string} queue target queue
+   * @param {(msg: GetMessage, belongChannel: AmqpChannelService) => Promise<boolean>} processor message processor
+   * @param {number} delay each message processed delay
+   * @param {Options.Get} options get message options
+   * @return {Promise<void>}
+   * @private
+   */
+  private async consumer(
+    queue: string,
+    processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>,
+    delay: number = 0,
+    options?: Options.Get,
+  ): Promise<void> {
     if (this.killed) {
       this.parentService.logger.warn(`Killed Consumer ${this.consumerName}`);
       return;
     }
-    // process message
-    const message = await this.parentService.getCurrentMessage(queue, options);
-    if (message) {
-      processor(message);
-    }
+    new Promise(async () => {
+      // process message
+      const message = await this.parentService.getCurrentMessage(queue, options);
+      if (message) {
+        const processResult = await processor(message, this.parentService);
+        // if callback return true auto ack message
+        if (processResult) {
+          await this.parentService.ackMessage(message);
+        }
+      }
+    });
     await new Promise(r => setTimeout(r, delay));
     await this.consumer(queue, processor, delay, options);
   }
@@ -60,7 +85,6 @@ export class AmqpEnhancerConsumerWrapper {
    */
   public async kill(): Promise<void> {
     this.killed = true;
-    await new Promise(r => setTimeout(r, 200));
   }
 
 }

@@ -18,8 +18,10 @@ export class AmqpEnhancerConsumerWrapper {
   private readonly delay: number;
   // get message options
   private readonly options: Options.Get | undefined;
-  // kill identify
-  private killed: boolean = false;
+  // interval instance
+  private intervalInstance: any;
+  // processing consumption
+  private processing = 0;
 
   /**
    * Constructor
@@ -60,16 +62,16 @@ export class AmqpEnhancerConsumerWrapper {
    *
    */
   private async consumer(): Promise<void> {
-    if (this.killed) {
-      this.parentService.logger.warn(`Killed Consumer ${this.consumerName}`);
-      return;
-    }
-    setInterval(() => {
-      this.consumption();
+    this.intervalInstance = setInterval(() => {
+      this.consumption().catch(err => {
+        this.processing--;
+        this.parentService.logger.error(`Consumer ${this.consumerName} Consumption Got Some Error: ${err}`);
+      });
     }, this.delay);
   }
 
   private async consumption() {
+    this.processing++;
     const message = await this.parentService.getCurrentMessage(this.consumeTargetQueue, this.options);
     if (message) {
       const processResult = await this.processor(message, this.parentService);
@@ -78,6 +80,7 @@ export class AmqpEnhancerConsumerWrapper {
         await this.parentService.ackMessage(message);
       }
     }
+    this.processing--;
   }
 
   /**
@@ -86,7 +89,13 @@ export class AmqpEnhancerConsumerWrapper {
    * @return {Promise<void>} --
    */
   public async kill(): Promise<void> {
-    this.killed = true;
+    if (this.intervalInstance) {
+      clearInterval(this.intervalInstance);
+    }
+    while (this.processing !== 0) {
+      await new Promise(r => setTimeout(r, 50));
+    }
+    this.parentService.logger.warn(`Killed Consumer ${this.consumerName}`);
   }
 
 }

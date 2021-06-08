@@ -1,6 +1,6 @@
 {
   "name": "onirii",
-  "version": "1.0.0-beta1",
+  "version": "1.0.0",
   "description": "Universal queue SDK",
   "main": "./lib/index.js",
   "scripts": {

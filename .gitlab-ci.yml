@@ -4,6 +4,8 @@ variables:
 
 stages:
   - sonar
+  - publish
+  - publish-npm
 
 sonar:
   stage: sonar
@@ -17,3 +19,14 @@ sonar:
       -Dsonar.projectVersion=$VERSION \
       -Dsonar.host.url=https://sonar.heavenark.com \
       -Dsonar.login=38fd4defb6216085372051f675776ad81626915b
+
+publish:
+  stage: publish
+  tags:
+    - build
+  script:
+    - npm config set registry https://registry.npmjs.org/
+    - npm run publish
+    - npm config set registry https://nexus.heavenark.com/repository/npm-private/
+    - npm run publish
+    - npm config set registry https://nexus.heavenark.com/repository/npm-public/

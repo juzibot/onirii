@@ -18,9 +18,6 @@
     "type": "git",
     "url": "https://gitlab.heavenark.com/Luminous/onirii"
   },
-  "publishConfig": {
-    "registry": "https://nexus.heavenark.com/repository/npm-private/"
-  },
   "keywords": [],
   "author": "Luminous",
   "license": "MIT",

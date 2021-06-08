@@ -26,7 +26,7 @@ publish:
     - build
   script:
     - npm config set registry https://registry.npmjs.org/
-    - npm run publish
+    - npm publish
     - npm config set registry https://nexus.heavenark.com/repository/npm-private/
-    - npm run publish
+    - npm publish
     - npm config set registry https://nexus.heavenark.com/repository/npm-public/

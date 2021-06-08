@@ -2,20 +2,24 @@
   "name": "onirii",
   "version": "1.0.0-beta1",
   "description": "Universal queue SDK",
-  "main": "./dist/index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "lint": "eslint src src/**/*.ts",
     "test": "jest ./test",
     "test-coverage": "jest --coverage",
-    "tsc": "rm -rf ./dist && tsc",
+    "clean": "rm -rf ./lib && rm -rf ./logs",
+    "tsc": "npm run clean && tsc",
     "deploy": "npm run tsc && npm publish"
   },
   "files": [
-    "dist/"
+    "lib/*"
   ],
   "repository": {
     "type": "git",
     "url": "https://gitlab.heavenark.com/Luminous/onirii"
+  },
+  "publishConfig": {
+    "registry": "https://nexus.heavenark.com/repository/npm-private/"
   },
   "keywords": [],
   "author": "Luminous",

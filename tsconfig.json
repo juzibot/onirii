@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
-    "target": "es2017",
+    "outDir": "lib",
+    "target": "es6",
     "module": "commonjs",
     "charset": "utf8",
     "declaration": true,

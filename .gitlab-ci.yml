@@ -25,7 +25,8 @@ publish:
   tags:
     - build
   script:
-    - npm install
+    - yarn install
+    - tree ./
     - npm config set registry https://registry.npmjs.org/
     - npm run deploy
     - npm config set registry https://nexus.heavenark.com/repository/npm-private/

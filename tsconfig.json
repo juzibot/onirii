@@ -4,6 +4,7 @@
     "target": "es6",
     "module": "commonjs",
     "charset": "utf8",
+    "types": ["node"],
     "declaration": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -11,6 +12,7 @@
     "importHelpers": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "moduleResolution": "Node",
     "lib": [
       "dom",
       "esnext"

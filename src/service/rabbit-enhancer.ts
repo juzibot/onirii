@@ -26,6 +26,9 @@ export class RabbitEnhancer {
   private channelPoint = 0;
 
   constructor(name: string, protocol: 'amqp091' | 'http', configure: RabbitEnhancerConfigure) {
+    if(protocol === 'http'){
+      throw new Error("Not Complete Supported Yet You Can Try It With createRabbitManagerService()")
+    }
     this.instanceName = name;
     this.enhancerProtocol = protocol;
     this.configure = configure;

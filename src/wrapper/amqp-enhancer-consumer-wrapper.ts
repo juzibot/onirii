@@ -10,6 +10,14 @@ export class AmqpEnhancerConsumerWrapper {
   public readonly consumerName: string;
   // prent channel service
   private readonly parentService: AmqpChannelService;
+  //
+  private readonly consumeTargetQueue: string;
+  // message processor
+  private readonly processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>;
+  // each message processed delay
+  private readonly delay: number;
+  // get message options
+  private readonly options: Options.Get | undefined;
   // kill identify
   private killed: boolean = false;
 
@@ -30,13 +38,17 @@ export class AmqpEnhancerConsumerWrapper {
     parentService: AmqpChannelService,
     queue: string,
     processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>,
-    delay: number,
+    delay = 10,
     options?: Options.Get,
   ) {
     this.consumerName = consumerName;
     this.parentService = parentService;
     this.parentService.logger.info(`Creating Consumer ${this.consumerName}`);
-    this.consumer(queue, processor, delay, options).catch(err => {
+    this.consumeTargetQueue = queue;
+    this.processor = processor;
+    this.delay = delay < 10 ? 10 : delay;
+    this.options = options;
+    this.consumer().catch(err => {
       this.parentService.logger.error(`Consumer ${this.consumerName} Got Some Error: ${err.stack}`);
     });
   }
@@ -46,36 +58,26 @@ export class AmqpEnhancerConsumerWrapper {
    *
    * Note:: if message processor return true ,current channel will auto ack this message
    *
-   * @param {string} queue target queue
-   * @param {(msg: GetMessage, belongChannel: AmqpChannelService) => Promise<boolean>} processor message processor
-   * @param {number} delay each message processed delay
-   * @param {Options.Get} options get message options
-   * @return {Promise<void>}
-   * @private
    */
-  private async consumer(
-    queue: string,
-    processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>,
-    delay: number = 0,
-    options?: Options.Get,
-  ): Promise<void> {
+  private async consumer(): Promise<void> {
     if (this.killed) {
       this.parentService.logger.warn(`Killed Consumer ${this.consumerName}`);
       return;
     }
-    await new Promise(async () => {
-      // process message
-      const message = await this.parentService.getCurrentMessage(queue, options);
-      if (message) {
-        const processResult = await processor(message, this.parentService);
-        // if callback return true auto ack message
-        if (processResult) {
-          await this.parentService.ackMessage(message);
-        }
+    setInterval(() => {
+      this.consumption();
+    }, this.delay);
+  }
+
+  private async consumption() {
+    const message = await this.parentService.getCurrentMessage(this.consumeTargetQueue, this.options);
+    if (message) {
+      const processResult = await this.processor(message, this.parentService);
+      // if callback return true auto ack message
+      if (processResult) {
+        await this.parentService.ackMessage(message);
       }
-    });
-    await new Promise(r => setTimeout(r, delay));
-    await this.consumer(queue, processor, delay, options);
+    }
   }
 
   /**

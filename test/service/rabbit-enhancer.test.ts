@@ -53,7 +53,6 @@ test('rabbit-enhancer-test', async () => {
 
   await rabbitEnhancer.close();
 
-  await new Promise(r => setTimeout(r, 30 * 60 * 1000));
 });
 
 jest.setTimeout(60 * 60 * 1000);

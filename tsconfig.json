@@ -4,7 +4,6 @@
     "target": "es6",
     "module": "commonjs",
     "charset": "utf8",
-    "types": ["node"],
     "declaration": true,
     "skipLibCheck": true,
     "esModuleInterop": true,

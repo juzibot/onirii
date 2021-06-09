@@ -1,20 +1,20 @@
 ###
-GET https://rabbit-mq-test.heavenark.cn/api/exchanges
+GET https://rabbit-mq-test.hva.asia/api/exchanges
 Accept: application/json
 Authorization: Basic test testtset123+
 
 ###
-GET https://rabbit-mq-test.heavenark.cn/api/exchanges/%2F
+GET https://rabbit-mq-test.hva.asia/api/exchanges/%2F
 Accept: application/json
 Authorization: Basic test testtset123+
 
 ###
-GET https://rabbit-mq-test.heavenark.cn/api/exchanges/%2F/testExchange10
+GET https://rabbit-mq-test.hva.asia/api/exchanges/%2F/testExchange10
 Accept: application/json
 Authorization: Basic test testtset123+
 
 ###
-PUT https://rabbit-mq-test.heavenark.cn/api/exchanges/%2F/testExchange
+PUT https://rabbit-mq-test.hva.asia/api/exchanges/%2F/testExchange
 Accept: application/json
 Authorization: Basic test testtset123+
 
@@ -24,12 +24,12 @@ Authorization: Basic test testtset123+
 }
 
 ###
-DELETE https://rabbit-mq-test.heavenark.cn/api/exchanges/%2F/testExchange?if-unused=true
+DELETE https://rabbit-mq-test.hva.asia/api/exchanges/%2F/testExchange?if-unused=true
 Accept: application/json
 Authorization: Basic test testtset123+
 
 ###
-GET https://rabbit-mq-test.heavenark.cn/api/exchanges/%2F/testExchange/bindings/source
+GET https://rabbit-mq-test.hva.asia/api/exchanges/%2F/testExchange/bindings/source
 Accept: application/json
 Authorization: Basic test testtset123+
 

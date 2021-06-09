@@ -26,8 +26,8 @@ export class RabbitEnhancer {
   private channelPoint = 0;
 
   constructor(name: string, protocol: 'amqp091' | 'http', configure: RabbitEnhancerConfigure) {
-    if(protocol === 'http'){
-      throw new Error("Not Complete Supported Yet You Can Try It With createRabbitManagerService()")
+    if (protocol === 'http') {
+      throw new Error('Not Complete Supported Yet You Can Try It With createRabbitManagerService()');
     }
     this.instanceName = name;
     this.enhancerProtocol = protocol;
@@ -70,11 +70,13 @@ export class RabbitEnhancer {
     delay?: number,
     consumerName?: string,
     options?: Options.Get,
-  ): Promise<void> {
+  ): Promise<AmqpEnhancerConsumerWrapper> {
     const consumer = this.getNextChannel().enhancerConsume(queue, processor, delay, consumerName, options);
     if (consumer) {
       this.consumerPool.push(consumer);
+      return consumer;
     }
+    throw new Error(`Can't create consumer, This is a unexpect error please create issue with code demo`);
   }
 
   public async killConsumer(name: string): Promise<void> {

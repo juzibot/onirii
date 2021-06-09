@@ -65,7 +65,7 @@ export class AmqpEnhancerConsumerWrapper {
     this.intervalInstance = setInterval(() => {
       this.consumption().catch(err => {
         this.processing--;
-        this.parentService.logger.error(`Consumer ${this.consumerName} Consumption Got Some Error: ${err}`);
+        this.parentService.logger.error(`Consumer ${this.consumerName} Consumption Got Some Error: ${JSON.stringify(err)}`);
       });
     }, this.delay);
   }

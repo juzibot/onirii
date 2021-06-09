@@ -5,10 +5,11 @@ variables:
 stages:
   - sonar
   - publish
-  - publish-npm
 
 sonar:
   stage: sonar
+  only:
+    - /^fature-.*$/
   tags:
     - build
   script:
@@ -22,6 +23,8 @@ sonar:
 
 publish:
   stage: publish
+  only:
+    - /^release-.*$/
   tags:
     - build
   script:

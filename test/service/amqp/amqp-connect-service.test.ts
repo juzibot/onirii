@@ -10,7 +10,7 @@ test('amqp-connect-service-test', async () => {
   await connectService.ready();
   // multiple channel test
   logger.debug(connectService.MAX_CHANNEL_COUNT);
-  const channelList: string[] = [];
+  const channelList = [];
   for (let x = 0; x <= connectService.MAX_CHANNEL_COUNT; x++) {
     if (x < 10) {
       await connectService.createChannelService(true);
@@ -21,27 +21,29 @@ test('amqp-connect-service-test', async () => {
       continue;
     }
     if (x < 30) {
-      channelList.push((await connectService.createChannelWrapper(true))!.instanceName);
+      channelList.push((await connectService.createChannelWrapper(true))?.instanceName);
       continue;
     }
     if (x < 35) {
-      channelList.push((await connectService.createChannelWrapper(false))!.instanceName);
+      channelList.push((await connectService.createChannelWrapper(false))?.instanceName);
       continue;
     }
     if (x < 40) {
-      channelList.push((await connectService.createChannelService(true))!.instanceName);
+      channelList.push((await connectService.createChannelService(true))?.instanceName);
       continue;
     }
     if (x < 45) {
-      channelList.push((await connectService.createChannelService(false))!.instanceName);
+      channelList.push((await connectService.createChannelService(false))?.instanceName);
       continue;
     }
     await connectService.createChannelService(false);
   }
   // test kill channel
   logger.debug(channelList);
-  for (let channelListElement of channelList) {
-    await connectService.killChannel(channelListElement);
+  for (const channelListElement of channelList) {
+    if(channelListElement){
+      await connectService.killChannel(channelListElement);
+    }
   }
   // re flash pool test
   expect(await connectService.createChannelService(true)).not.toBe(undefined);

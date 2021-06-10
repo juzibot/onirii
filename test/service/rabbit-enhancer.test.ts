@@ -3,9 +3,9 @@ import { RabbitEnhancer } from '../../src/service/rabbit-enhancer';
 test('rabbit-enhancer-test', async () => {
 
   const rabbitEnhancer = new RabbitEnhancer('test-enhancer', 'amqp091', {
-    openConnectionCount: 10,
+    openConnectionCount: 2,
     openChannelType: 'normal',
-    openChannelCount: 50,
+    openChannelCount: 8,
     resourceConfigure: {
       queueList: [
         {
@@ -33,23 +33,22 @@ test('rabbit-enhancer-test', async () => {
 
   await rabbitEnhancer.ready();
 
-  for (let i = 0; i < 1000; i++) {
-    await rabbitEnhancer.addConsumer('EnhancerTestQueue', async msg => {
+  for (let i = 0; i < 10; i++) {
+    await rabbitEnhancer.addConsumer('aqueue', async (msg, channel) => {
       if (msg) {
         msg.content.toString();
-        await rabbitEnhancer.pushOperation(async channel => {
-          await channel.sendMessageToQueue('testQueue2', Buffer.from(msg.content.toString()));
-        });
+        await new Promise(r => setTimeout(r, 15 * 1000));
+        await channel.sendMessageToQueue('testQueue2', Buffer.from(msg.content.toString()));
       }
       return true;
-    }, 500);
+    }, 100);
   }
 
-  await new Promise(r => setTimeout(r, 10 * 1000));
+  await new Promise(r => setTimeout(r, 5 * 1000));
 
-  await rabbitEnhancer.killConsumer('test-enhancer-amqp-connect-3-channel-4-consumer-3');
+  await rabbitEnhancer.killConsumer('test-enhancer-amqp-connect-0-channel-0-consumer-0');
 
-  for (let i = 0; i < 120000; i++) {
+  for (let i = 0; i < 1200; i++) {
     new Promise(() => {
       rabbitEnhancer.pushOperation(async channel => {
         return await channel.sendMessageToQueue('aqueue', Buffer.from('testMessage'));
@@ -57,7 +56,7 @@ test('rabbit-enhancer-test', async () => {
     });
   }
 
-  await new Promise(r => setTimeout(r, 60 * 1000));
+  await new Promise(r => setTimeout(r, 30 * 1000));
 
   await rabbitEnhancer.close();
 

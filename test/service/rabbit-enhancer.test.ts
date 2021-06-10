@@ -9,6 +9,8 @@ test('rabbit-enhancer-test', async () => {
     resourceConfigure: {
       queueList: [{
         name: 'EnhancerTestQueue',
+      }, {
+        name: 'testQueue2',
       }],
       exchangeList: [{
         name: 'EnhancerTestExchange',
@@ -26,7 +28,7 @@ test('rabbit-enhancer-test', async () => {
   await rabbitEnhancer.ready();
 
   for (let i = 0; i < 1000; i++) {
-    await rabbitEnhancer.addConsumer('aqueue', async (msg) => {
+    await rabbitEnhancer.addConsumer('EnhancerTestQueue', async (msg) => {
       if (msg) {
         msg.content.toString();
         await rabbitEnhancer.pushOperation(async (channel) => {

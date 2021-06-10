@@ -18,6 +18,7 @@ test('amqp-channel-service-test', async () => {
 
   // create test endearment
   await defaultChannel.createQueueIfNotExist('testQueue');
+  await defaultChannel.createQueueIfNotExist('testQueue2')
   await defaultChannel.createExchangeIfNotExist('testExchange', 'direct');
   await defaultChannel.createExchangeIfNotExist('testExchange2', 'direct');
 

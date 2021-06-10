@@ -10,7 +10,7 @@ export namespace RMConnect {
   /**
    * Vhost connection response model
    */
-  export interface vhostConnectionsStatus {
+  export interface VhostConnectionsStatus {
     auth_mechanism: string,
     channel_max: number,
     channels: number,

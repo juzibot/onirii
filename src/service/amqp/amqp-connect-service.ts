@@ -23,7 +23,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
   // current server connect
   public currentConnection: Connection | undefined;
   // current connect amqp server
-  public readonly currentAmqpServerUrl: string | Options.Connect | undefined;
+  public readonly currentAmqpServerUrl: string | Options.Connect = '';
   // current amqp connect service instance identify name
   public readonly instanceName: string;
   // connect max channel default 2048, this value can overwrite at env with MAX_CHANNEL_COUNT
@@ -47,11 +47,16 @@ export class AmqpConnectService implements AmqpConnectInterface {
     this.instanceName = `${name}-amqp-connect-${index ? index : 0}`;
     // init logger
     this.logger = LogFactory.create(this.instanceName);
-    this.currentAmqpServerUrl = amqpUrl;
+    if (amqpUrl) {
+      this.currentAmqpServerUrl = amqpUrl;
+    }
     // load amqp server url from public env file
     // this should always [=== undefined] do not change to [!this.currentAmqpServerUrl]
-    if (this.currentAmqpServerUrl === undefined) {
-      this.currentAmqpServerUrl = EnvLoaderUtil.getInstance().getPublicConfig().amqpServerUrl;
+    if (!this.currentAmqpServerUrl) {
+      const loadFromEnv = EnvLoaderUtil.getInstance().getPublicConfig().amqpServerUrl;
+      if (loadFromEnv) {
+        this.currentAmqpServerUrl = loadFromEnv;
+      }
     }
     // load max channel count if configured
     const maxChannelCount = EnvLoaderUtil.getInstance().getPublicConfig().maxChannelCount;
@@ -72,7 +77,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
   public async ready(options?: any): Promise<void> {
     this.logger.debug(`Initialize ${this.instanceName} Creating Amqp Server: ${this.currentAmqpServerUrl}`);
     try {
-      this.currentConnection = await amqp.connect(this.currentAmqpServerUrl!, options);
+      this.currentConnection = await amqp.connect(this.currentAmqpServerUrl, options);
       this.logger.debug(`${this.instanceName} Connected Amqp Server`);
     } catch (err) {
       this.logger.error(`${this.instanceName} Connect Got Error: ${err.stack}`);
@@ -89,6 +94,9 @@ export class AmqpConnectService implements AmqpConnectInterface {
   public async createChannelWrapper(confirmChannel: true): Promise<AmqpOriginalConfirmChannelWrapper | undefined>;
   public async createChannelWrapper(confirmChannel: false): Promise<AmqpOriginalChannelWrapper | undefined>;
   public async createChannelWrapper(confirmChannel: boolean): Promise<AmqpOriginalChannelWrapper | AmqpOriginalConfirmChannelWrapper | undefined> {
+    if (!this.currentConnection) {
+      throw new Error('Please ready this connection first');
+    }
     // check exist channel count
     if (this.checkChannelCountOvered()) {
       return;
@@ -96,13 +104,13 @@ export class AmqpConnectService implements AmqpConnectInterface {
     // create confirm channel wrapper
     if (confirmChannel) {
       const confirmChannel: AmqpOriginalConfirmChannelWrapper =
-        new AmqpOriginalConfirmChannelWrapper(await this.currentConnection!.createConfirmChannel(), this.getNextChannelName());
+        new AmqpOriginalConfirmChannelWrapper(await this.currentConnection.createConfirmChannel(), this.getNextChannelName());
       this.wrapperChannelPool.push(confirmChannel);
       return confirmChannel;
     }
     // create channel wrapper
     const channel: AmqpOriginalChannelWrapper =
-      new AmqpOriginalChannelWrapper(await this.currentConnection!.createChannel(), this.getNextChannelName());
+      new AmqpOriginalChannelWrapper(await this.currentConnection.createChannel(), this.getNextChannelName());
     this.wrapperChannelPool.push(channel);
     return channel;
   }
@@ -117,6 +125,9 @@ export class AmqpConnectService implements AmqpConnectInterface {
   public async createChannelService(confirmChannel: true): Promise<AmqpConfirmChannelService | undefined>;
   public async createChannelService(confirmChannel: false): Promise<AmqpChannelService | undefined>;
   public async createChannelService(confirmChannel: boolean): Promise<AmqpChannelService | AmqpConfirmChannelService | undefined> {
+    if (!this.currentConnection) {
+      throw new Error('Please ready this connection first');
+    }
     // check exist channel count
     if (this.checkChannelCountOvered()) {
       return;
@@ -124,13 +135,13 @@ export class AmqpConnectService implements AmqpConnectInterface {
     // create confirm channel service
     if (confirmChannel) {
       const confirmChannelService: AmqpConfirmChannelService =
-        new AmqpConfirmChannelService(this.getNextChannelName(), await this.currentConnection!.createConfirmChannel());
+        new AmqpConfirmChannelService(this.getNextChannelName(), await this.currentConnection.createConfirmChannel());
       this.serviceChannelPool.push(confirmChannelService);
       return confirmChannelService;
     }
     // create channel service
     const channelService: AmqpChannelService =
-      new AmqpChannelService(this.getNextChannelName(), await this.currentConnection!.createChannel());
+      new AmqpChannelService(this.getNextChannelName(), await this.currentConnection.createChannel());
     this.serviceChannelPool.push(channelService);
     return channelService;
   }
@@ -166,9 +177,12 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * @return {Promise<void>}
    */
   async close(): Promise<void> {
+    if (!this.currentConnection) {
+      throw new Error('Please ready this connection first');
+    }
     await this.killWrapperChannel();
     await this.killServiceChannel();
-    await this.currentConnection!.close();
+    await this.currentConnection.close();
     this.logger.warn(`Amqp Server Instance ${this.instanceName} Closed`);
   }
 

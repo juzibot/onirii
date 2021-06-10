@@ -56,15 +56,15 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   }
 
   public async createExchangeIfNotExist(name: string, type: string, options?: Options.AssertExchange): Promise<Replies.AssertExchange> {
-    return await this.currentChannelInstance.assertExchange(name, type, options);
+    return this.currentChannelInstance.assertExchange(name, type, options);
   }
 
   public async bindExchangeToExchange(target: string, from: string, key: string, args?: any): Promise<Replies.Empty> {
-    return await this.currentChannelInstance.bindExchange(target, from, key, args);
+    return this.currentChannelInstance.bindExchange(target, from, key, args);
   }
 
   public async bindQueueToExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty> {
-    return await this.currentChannelInstance.bindQueue(name, exchange, bindKey, args);
+    return this.currentChannelInstance.bindQueue(name, exchange, bindKey, args);
   }
 
   public async killConsume(consumerName: string): Promise<boolean> {
@@ -86,11 +86,11 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   }
 
   public async getExchangeStatus(name: string): Promise<Replies.Empty> {
-    return await this.currentChannelInstance.checkExchange(name);
+    return this.currentChannelInstance.checkExchange(name);
   }
 
   public async createQueueIfNotExist(name: string, options?: Options.AssertQueue): Promise<Replies.AssertQueue> {
-    return await this.currentChannelInstance.assertQueue(name, options);
+    return this.currentChannelInstance.assertQueue(name, options);
   }
 
   public consume(queue: string, processor: (msg: amqp.ConsumeMessage | null) => void, options?: Options.Consume)
@@ -102,11 +102,11 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   }
 
   public async deleteExchange(name: string, options?: Options.DeleteExchange): Promise<Replies.Empty> {
-    return await this.currentChannelInstance.deleteExchange(name, options);
+    return this.currentChannelInstance.deleteExchange(name, options);
   }
 
   public async deleteQueue(name: string, options?: Options.DeleteQueue): Promise<Replies.DeleteQueue> {
-    return await this.currentChannelInstance.deleteQueue(name, options);
+    return this.currentChannelInstance.deleteQueue(name, options);
   }
 
   /**
@@ -136,11 +136,11 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   }
 
   public async getCurrentMessage(queueName: string, options?: Options.Get): Promise<false | amqp.GetMessage> {
-    return await this.currentChannelInstance.get(queueName, options);
+    return this.currentChannelInstance.get(queueName, options);
   }
 
   public async getQueueStatus(name: string): Promise<Replies.AssertQueue> {
-    return await this.currentChannelInstance.checkQueue(name);
+    return this.currentChannelInstance.checkQueue(name);
   }
 
   public async rejectMessage(message: amqp.Message, allUp?: boolean, reQueue?: boolean): Promise<void> {
@@ -156,16 +156,16 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   }
 
   public async setPrefetchCount(count: number, global?: boolean): Promise<Replies.Empty> {
-    return await this.currentChannelInstance.prefetch(count, global);
+    return this.currentChannelInstance.prefetch(count, global);
   }
 
   public async purgeQueue(name: string): Promise<Replies.PurgeQueue> {
     this.logger.warn(`Purging Queue ${name}`);
-    return await this.currentChannelInstance.purgeQueue(name);
+    return this.currentChannelInstance.purgeQueue(name);
   }
 
   public async recover(): Promise<Replies.Empty> {
-    return await this.currentChannelInstance.recover();
+    return this.currentChannelInstance.recover();
   }
 
   public async sendMessageToExchange(exchangeName: string, key: string, content: Buffer, options?: Options.Publish): Promise<boolean> {
@@ -177,11 +177,11 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   }
 
   public async unbindExchangeToExchange(target: string, from: string, key: string, args?: any): Promise<Replies.Empty> {
-    return await this.currentChannelInstance.unbindExchange(target, from, key, args);
+    return this.currentChannelInstance.unbindExchange(target, from, key, args);
   }
 
   public async unbindQueueToExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty> {
-    return await this.currentChannelInstance.unbindQueue(name, exchange, bindKey, args);
+    return this.currentChannelInstance.unbindQueue(name, exchange, bindKey, args);
   }
 
   public async close(): Promise<void> {

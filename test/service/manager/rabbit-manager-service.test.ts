@@ -72,7 +72,7 @@ test('rabbit-manager-service-test-vhost', async () => {
 jest.setTimeout(30 * 1000);
 
 test('rabbit-manager-service-test-exchange', async () => {
-  const testExchange = 'testExchange';
+  const testExchange = 'exchange-test';
 
   expect((await managerService.getExchange()).length).not.toBe(0);
   expect((await managerService.getExchange('%2F')).length).not.toBe(0);

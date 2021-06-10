@@ -67,7 +67,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @return {Promise<any>} if cant connect to server specific return [false]
    */
   async checkAlarms(): Promise<any> {
-    return await this.apiRequester.getRequest(
+    return this.apiRequester.getRequest(
       `${this.managerApi}/health/checks/alarms`,
       undefined,
       [this.managerAuth],
@@ -80,7 +80,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @return {Promise<any>} if cant connect to server specific return [false]
    */
   async checkLocalAlarms(): Promise<any> {
-    return await this.apiRequester.getRequest(
+    return this.apiRequester.getRequest(
       `${this.managerApi}/health/checks/local-alarms`,
       undefined,
       [this.managerAuth],
@@ -95,7 +95,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @return {Promise<any>} if cant connect to server specific return [false]
    */
   async checkCertificate(leftTime: number, unit: 'days' | 'weeks' | 'months' | 'years'): Promise<any> {
-    return await this.apiRequester.getRequest(
+    return this.apiRequester.getRequest(
       `${this.managerApi}/health/checks/certificate-expiration/${leftTime}/${unit}`,
       undefined,
       [this.managerAuth],
@@ -109,7 +109,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @return {Promise<HealthCheckPortRs | boolean>} if cant connect to server specific return [false]
    */
   async checkPortHealth(port: number): Promise<RMHealth.HealthCheckPortRs | boolean> {
-    return await this.apiRequester.getRequest(
+    return this.apiRequester.getRequest(
       `${this.managerApi}/health/checks/port-listener/${port}`,
       undefined,
       [this.managerAuth],
@@ -122,7 +122,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @return {Promise<HealthCheckBaseRs | boolean>} if cant connect to server specific return [false]
    */
   async checkNodeMirrorSyncCritical(): Promise<RMHealth.HealthCheckBaseRs | boolean> {
-    return await this.apiRequester.getRequest(
+    return this.apiRequester.getRequest(
       `${this.managerApi}/health/checks/node-is-mirror-sync-critical`,
       undefined,
       [this.managerAuth],
@@ -135,7 +135,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @return {Promise<HealthCheckBaseRs | boolean>} if cant connect to server specific return [false]
    */
   async checkNodeQuorumCritical(): Promise<RMHealth.HealthCheckBaseRs> {
-    return await this.apiRequester.getRequest(
+    return this.apiRequester.getRequest(
       `${this.managerApi}/health/checks/node-is-quorum-critical`,
       undefined,
       [this.managerAuth],
@@ -149,7 +149,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @return {Promise<HealthCheckProtocolRs | boolean>} if cant connect to server specific return [false]
    */
   public async checkProtocol(name: 'amqp091' | 'amqp10' | 'mqtt' | 'stomp' | 'web-mqtt' | 'web-stomp'): Promise<RMHealth.HealthCheckProtocolRs | boolean> {
-    return await this.apiRequester.getRequest(
+    return this.apiRequester.getRequest(
       `${this.managerApi}/health/checks/protocol-listener/${name}`,
       undefined,
       [this.managerAuth],
@@ -214,12 +214,12 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   /**
    * Get vhost status
    *
-   * @return {Promise<vhostDataModel[] | vhostDataModel | boolean>} if cant connect to server or vhost not exist specific return [false]
+   * @return {Promise<>} if cant connect to server or vhost not exist specific return [false]
    */
-  public async getVhost(): Promise<RMVhost.vhostDataModel[]>;
-  public async getVhost(name: string): Promise<RMVhost.vhostDataModel | boolean>;
-  public async getVhost(name?: string): Promise<RMVhost.vhostDataModel[] | RMVhost.vhostDataModel | boolean> {
-    return await this.apiRequester.getRequest(
+  public async getVhost(): Promise<RMVhost.VhostDataModel[]>;
+  public async getVhost(name: string): Promise<RMVhost.VhostDataModel | boolean>;
+  public async getVhost(name?: string): Promise<RMVhost.VhostDataModel[] | RMVhost.VhostDataModel | boolean> {
+    return this.apiRequester.getRequest(
       `${this.managerApi}/vhosts${name ? `/${name}` : ''}`,
       undefined,
       [this.managerAuth],
@@ -230,10 +230,10 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * Get vhost all connection list
    *
    * @param {string} name vhost name
-   * @return {Promise<RMConnect.vhostConnectionsStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
+   * @return {Promise<RMConnect.VhostConnectionsStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
    */
-  async getVhostConnection(name: string): Promise<RMConnect.vhostConnectionsStatus[] | boolean> {
-    return await this.apiRequester.getRequest(
+  async getVhostConnection(name: string): Promise<RMConnect.VhostConnectionsStatus[] | boolean> {
+    return this.apiRequester.getRequest(
       `${this.managerApi}/vhosts/${name}/connections`,
       undefined,
       [this.managerAuth],
@@ -245,10 +245,10 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    *
    * @param {string} name vhost name
    * @param {RabbitManager.PaginationParams} options paginationParams
-   * @return {Promise<RMChannel.vhostChannelStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
+   * @return {Promise<RMChannel.VhostChannelStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
    */
-  async getVhostOpenChannels(name: string, options?: RabbitManager.PaginationParams): Promise<RMChannel.vhostChannelStatus[] | boolean> {
-    return await this.apiRequester.getRequest(
+  async getVhostOpenChannels(name: string, options?: RabbitManager.PaginationParams): Promise<RMChannel.VhostChannelStatus[] | boolean> {
+    return this.apiRequester.getRequest(
       `${this.managerApi}/vhosts/${name}/channels`,
       options,
       [this.managerAuth],
@@ -262,7 +262,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @return {Promise<any>}
    */
   async startNode(vhostName: string, nodeName: string): Promise<any> {
-    return await this.apiRequester.postRequest(
+    return this.apiRequester.postRequest(
       `${this.managerApi}/vhosts/${vhostName}/start/${nodeName}`,
       true,
       undefined,
@@ -283,8 +283,10 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
     if (!vhost && name) {
       throw new Error('Must Specific Vhost When Getting Current Exchange');
     }
-    return await this.apiRequester.getRequest(
-      `${this.managerApi}/exchanges${vhost ? `/${vhost}` : ''}${name ? `/${name}` : ''}`,
+    const currentVhost = vhost ? `/${vhost}` : '';
+    const currentName = name ? `/${name}` : '';
+    return this.apiRequester.getRequest(
+      `${this.managerApi}/exchanges${currentVhost}${currentName}`,
       undefined,
       [this.managerAuth],
     );

@@ -88,7 +88,7 @@ export class RabbitEnhancer {
   }
 
   public async pushOperation(processor: (currentChannel: AmqpChannelService) => Promise<any>): Promise<any> {
-    return await processor(this.getNextChannel());
+    return processor(this.getNextChannel());
   }
 
   public async close(): Promise<void> {

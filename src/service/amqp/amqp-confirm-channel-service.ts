@@ -37,7 +37,7 @@ export class AmqpConfirmChannelService extends AmqpChannelService implements Amq
 
   async waitForConfirms(): Promise<void> {
     if ('waitForConfirms' in this.currentChannelInstance) {
-      return await this.currentChannelInstance.waitForConfirms();
+      return this.currentChannelInstance.waitForConfirms();
     }
     throw new Error(`This Error Should Not Happened Current Channel: ${this.currentChannelInstance}`);
   }

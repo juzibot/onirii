@@ -18,7 +18,7 @@ export namespace RMVhost {
   /**
    * Vhost status model
    */
-  export interface vhostDataModel {
+  export interface VhostDataModel {
     cluster_state: any,
     description: string,
     metadata: {

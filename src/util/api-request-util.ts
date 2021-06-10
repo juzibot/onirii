@@ -14,14 +14,14 @@ export class ApiRequestUtil {
   public async getRequest(url: string, params?: {}, header?: string[]): Promise<any> {
     const { statusCode, data, headers }
         = await curly.get(this.createParams(url, params), ApiRequestUtil.createBody(false, undefined, header));
-    return await this.responseAnalyzer.analGet(url, params, header, statusCode, data, headers);
+    return this.responseAnalyzer.analGet(url, params, header, statusCode, data, headers);
   }
 
   public async postRequest(url: string, jsonStringify?: boolean, params?: {}, header?: string[])
       : Promise<any> {
     const { statusCode, data, headers }
         = await curly.post(url, ApiRequestUtil.createBody(jsonStringify, params, header));
-    return await this.responseAnalyzer.analPost(url, params, header, statusCode, data, headers);
+    return this.responseAnalyzer.analPost(url, params, header, statusCode, data, headers);
   }
 
 
@@ -29,7 +29,7 @@ export class ApiRequestUtil {
       : Promise<any> {
     const { statusCode, data, headers }
         = await curly.put(url, ApiRequestUtil.createBody(jsonStringify, params, header));
-    return await this.responseAnalyzer.analPut(url, params, header, statusCode, data, headers);
+    return this.responseAnalyzer.analPut(url, params, header, statusCode, data, headers);
   }
 
   public async deleteRequest(url: string, params?: {}, header?: string[]): Promise<any> {

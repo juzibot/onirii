@@ -1,16 +1,28 @@
 variables:
   PROJECT_NAME: "Onirii"
-  VERSION: "1.0.0-beta1"
+  VERSION: "1.1.0"
 
 stages:
+  - test
   - sonar
   - publish
+
+test:
+  stage: test
+  only:
+    - master
+    - /^release-.*$/
+  tags:
+    - build
+  script:
+    - npm run test
 
 sonar:
   stage: sonar
   only:
     - /^feature-.*$/
     - /^style-.*$/
+    - /^fix-.*$/
   tags:
     - build
   script:

@@ -15,6 +15,10 @@ test:
   tags:
     - build
   script:
+    - export https_proxy=http://40.83.115.224:30000/
+    - npm config set registry https://nexus.heavenark.com/repository/npm-public/
+    - yarn install
+    - export https_proxy=
     - npm run test
 
 sonar:

@@ -7,31 +7,37 @@ test('rabbit-enhancer-test', async () => {
     openChannelType: 'normal',
     openChannelCount: 50,
     resourceConfigure: {
-      queueList: [{
-        name: 'EnhancerTestQueue',
-      }, {
-        name: 'testQueue2',
-      }],
-      exchangeList: [{
-        name: 'EnhancerTestExchange',
-        type: 'direct',
-      }],
-      bindList: [{
-        type: 'qte',
-        fromSourceName: 'EnhancerTestExchange',
-        targetSourceName: 'EnhancerTestQueue',
-        key: 'testKey',
-      }],
+      queueList: [
+        {
+          name: 'EnhancerTestQueue',
+        }, {
+          name: 'testQueue2',
+        },
+      ],
+      exchangeList: [
+        {
+          name: 'EnhancerTestExchange',
+          type: 'direct',
+        },
+      ],
+      bindList: [
+        {
+          type: 'qte',
+          fromSourceName: 'EnhancerTestExchange',
+          targetSourceName: 'EnhancerTestQueue',
+          key: 'testKey',
+        },
+      ],
     },
   });
 
   await rabbitEnhancer.ready();
 
   for (let i = 0; i < 1000; i++) {
-    await rabbitEnhancer.addConsumer('EnhancerTestQueue', async (msg) => {
+    await rabbitEnhancer.addConsumer('EnhancerTestQueue', async msg => {
       if (msg) {
         msg.content.toString();
-        await rabbitEnhancer.pushOperation(async (channel) => {
+        await rabbitEnhancer.pushOperation(async channel => {
           await channel.sendMessageToQueue('testQueue2', Buffer.from(msg.content.toString()));
         });
       }
@@ -45,7 +51,7 @@ test('rabbit-enhancer-test', async () => {
 
   for (let i = 0; i < 120000; i++) {
     new Promise(() => {
-      rabbitEnhancer.pushOperation(async (channel) => {
+      rabbitEnhancer.pushOperation(async channel => {
         return await channel.sendMessageToQueue('aqueue', Buffer.from('testMessage'));
       });
     });

@@ -322,11 +322,8 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @return {Promise<RMExchange.ExchangeStatusModel[] | RMExchange.ExchangeStatusModel | boolean>} if cant connect to server or exchange    not exist specific return [false]
    */
   public async getExchange(): Promise<RMExchange.ExchangeStatusModel[]>;
-
   public async getExchange(vhost: string): Promise<RMExchange.ExchangeStatusModel[]>;
-
   public async getExchange(vhost: string, name: string): Promise<RMExchange.ExchangeStatusModel | boolean>
-
   public async getExchange(vhost?: string, name?: string)
     : Promise<RMExchange.ExchangeStatusModel[] | RMExchange.ExchangeStatusModel | boolean> {
     if (!vhost && name) {

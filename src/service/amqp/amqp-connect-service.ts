@@ -51,7 +51,6 @@ export class AmqpConnectService implements AmqpConnectInterface {
       this.currentAmqpServerUrl = amqpUrl;
     }
     // load amqp server url from public env file
-    // this should always [=== undefined] do not change to [!this.currentAmqpServerUrl]
     if (!this.currentAmqpServerUrl) {
       const loadFromEnv = EnvLoaderUtil.getInstance().getPublicConfig().amqpServerUrl;
       if (loadFromEnv) {
@@ -132,9 +131,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * @return {Promise<AmqpConfirmChannelService | AmqpChannelService>}
    */
   public async createChannelService(confirmChannel: true): Promise<AmqpConfirmChannelService | undefined>;
-
   public async createChannelService(confirmChannel: false): Promise<AmqpChannelService | undefined>;
-
   public async createChannelService(confirmChannel: boolean): Promise<AmqpChannelService | AmqpConfirmChannelService | undefined> {
     if (!this.currentConnection) {
       throw new Error('Please ready this connection first');
@@ -164,9 +161,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * @return {Promise<AmqpOriginalConfirmChannelWrapper | undefined>}
    */
   public async createChannelWrapper(confirmChannel: true): Promise<AmqpOriginalConfirmChannelWrapper | undefined>;
-
   public async createChannelWrapper(confirmChannel: false): Promise<AmqpOriginalChannelWrapper | undefined>;
-
   public async createChannelWrapper(confirmChannel: boolean): Promise<AmqpOriginalChannelWrapper | AmqpOriginalConfirmChannelWrapper | undefined> {
     if (!this.currentConnection) {
       throw new Error('Please ready this connection first');

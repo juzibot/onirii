@@ -37,10 +37,10 @@ export class RabbitEnhancer {
   public async ready() {
     // create connection
     for (let i = 0; i < this.configure.openConnectionCount; i++) {
-      const connectInstance = new AmqpConnectService(`${this.instanceName}`, i);
+      const connectInstance = new AmqpConnectService(`${ this.instanceName }`, i);
       await connectInstance.ready();
       if (!connectInstance) {
-        throw new Error(`Can Not Create Connection ${this.instanceName}-${i}`);
+        throw new Error(`Can Not Create Connection ${ this.instanceName }-${ i }`);
       }
       this.connectionPool.push(connectInstance);
     }
@@ -52,7 +52,7 @@ export class RabbitEnhancer {
         await currentConnection.createChannelService(true) :
         await currentConnection.createChannelService(false);
       if (!channelInstance) {
-        throw new Error(`Can Not Create Channel At ${currentConnection.instanceName}`);
+        throw new Error(`Can Not Create Channel At ${ currentConnection.instanceName }`);
       }
       this.channelPool.push(channelInstance);
     }
@@ -88,7 +88,7 @@ export class RabbitEnhancer {
   }
 
   public async pushOperation(processor: (currentChannel: AmqpChannelService) => Promise<any>): Promise<any> {
-    return await processor(this.getNextChannel());
+    return processor(this.getNextChannel());
   }
 
   public async close(): Promise<void> {

@@ -10,7 +10,7 @@ export namespace RMChannel {
   /**
    * Vhost status response model
    */
-  export interface vhostChannelStatus {
+  export interface VhostChannelStatus {
     acks_uncommitted: number,
     confirm: boolean,
     connection_details: {

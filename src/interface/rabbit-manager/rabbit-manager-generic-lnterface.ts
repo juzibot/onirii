@@ -1,3 +1,3 @@
-export interface RabbitManagerGenericLnterface{
+export interface RabbitManagerGenericLnterface {
 
 }

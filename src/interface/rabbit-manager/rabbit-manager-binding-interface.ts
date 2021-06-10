@@ -1,3 +1,3 @@
-export interface RabbitManagerBindingInterface{
+export interface RabbitManagerBindingInterface {
 
 }

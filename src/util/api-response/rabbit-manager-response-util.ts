@@ -25,7 +25,7 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
         // already deleted
         return true;
       default:
-        this.logger.warn(`un-caught response code: ${code} from ${url}`);
+        this.logger.warn(`un-caught response code: ${ code } from ${ url }`);
         return {
           code: code,
           header: rsHeader,
@@ -43,10 +43,10 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
       case 200:
         return data;
       case 404:
-        this.logger.warn(`Cant Found Target Resource ${url}`);
+        this.logger.warn(`Cant Found Target Resource ${ url }`);
         return false;
       default:
-        this.logger.warn(`Un-Caught response code: ${code} from ${url}`);
+        this.logger.warn(`Un-Caught response code: ${ code } from ${ url }`);
         return {
           code: code,
           header: rsHeader,
@@ -75,7 +75,7 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
         // already exist only create operation will return this so return create failure
         return false;
       default:
-        this.logger.warn(`un-caught response code: ${code} from ${url}`);
+        this.logger.warn(`un-caught response code: ${ code } from ${ url }`);
         return {
           code: code,
           header: rsHeader,
@@ -86,12 +86,12 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
 
   private printVerbose(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]) {
     this.logger.info(
-        `Requested Url: ${url}
-        header: ${header || ''}
-        Params: ${params || ''}
-        Response Code: ${code}
-        Header: ${rsHeader ? JSON.stringify(rsHeader) : ''}
-        data: ${data ? JSON.stringify(data) : ''}`);
+      `Requested Url: ${ url }
+        header: ${ header || '' }
+        Params: ${ params || '' }
+        Response Code: ${ code }
+        Header: ${ rsHeader ? JSON.stringify(rsHeader) : '' }
+        data: ${ data ? JSON.stringify(data) : '' }`);
   }
 
 

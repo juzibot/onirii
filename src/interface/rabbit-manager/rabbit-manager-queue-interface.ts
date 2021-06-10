@@ -1,3 +1,3 @@
-export interface RabbitManagerQueueInterface{
+export interface RabbitManagerQueueInterface {
 
 }

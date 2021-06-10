@@ -17,29 +17,29 @@ export class AmqpConfirmChannelService extends AmqpChannelService implements Amq
   }
 
   async sendMessageToExchange(
-      exchangeName: string,
-      key: string,
-      content: Buffer,
-      options?: Options.Publish,
-      callback?: (err: any, ok: Replies.Empty) => void,
+    exchangeName: string,
+    key: string,
+    content: Buffer,
+    options?: Options.Publish,
+    callback?: (err: any, ok: Replies.Empty) => void,
   ): Promise<boolean> {
     return this.currentChannelInstance.publish(exchangeName, key, content, options, callback);
   }
 
   async sendMessageToQueue(
-      queueName: string,
-      content: Buffer,
-      options?: Options.Publish,
-      callback?: (err: any, ok: Replies.Empty) => void,
+    queueName: string,
+    content: Buffer,
+    options?: Options.Publish,
+    callback?: (err: any, ok: Replies.Empty) => void,
   ): Promise<boolean> {
     return this.currentChannelInstance.sendToQueue(queueName, content, options, callback);
   }
 
   async waitForConfirms(): Promise<void> {
     if ('waitForConfirms' in this.currentChannelInstance) {
-      return await this.currentChannelInstance.waitForConfirms();
+      return this.currentChannelInstance.waitForConfirms();
     }
-    throw new Error(`This Error Should Not Happened Current Channel: ${this.currentChannelInstance}`);
+    throw new Error(`This Error Should Not Happened Current Channel: ${ this.currentChannelInstance }`);
   }
 
 }

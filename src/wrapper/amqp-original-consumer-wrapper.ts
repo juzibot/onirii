@@ -30,10 +30,10 @@ export class AmqpOriginalConsumerWrapper {
   ) {
     this.consumerName = consumerName;
     this.parentService = parentService;
-    this.parentService.logger.info(`Creating Consumer ${this.consumerName}`);
+    this.parentService.logger.info(`Creating Consumer ${ this.consumerName }`);
     const currentOptions = Object.assign({ consumerTag: consumerName }, options);
     this.parentService.currentChannelInstance.consume(queue, processor, currentOptions).catch(err => {
-      this.parentService.logger.error(`Can't Create Consumer ${this.consumerName} Error: ${err.stack}`);
+      this.parentService.logger.error(`Can't Create Consumer ${ this.consumerName } Error: ${ err.stack }`);
       throw err;
     });
   }
@@ -45,7 +45,7 @@ export class AmqpOriginalConsumerWrapper {
    */
   public async kill(): Promise<void> {
     await this.parentService.currentChannelInstance.cancel(this.consumerName);
-    this.parentService.logger.warn(`Killed Consumer ${this.consumerName}`);
+    this.parentService.logger.warn(`Killed Consumer ${ this.consumerName }`);
   }
 
 }

@@ -15,26 +15,26 @@ export interface RabbitManagerVhostInterface {
   /**
    * Get vhost status
    *
-   * @return {Promise<vhostDataModel[] | vhostDataModel | boolean>} if cant connect to server or vhost not exist specific return [false]
+   * @return {Promise<>} if cant connect to server or vhost not exist specific return [false]
    */
-  getVhost(name?: string): Promise<RMVhost.vhostDataModel[] | RMVhost.vhostDataModel | boolean>;
+  getVhost(name?: string): Promise<RMVhost.VhostDataModel[] | RMVhost.VhostDataModel | boolean>;
 
   /**
    * Get vhost all connection list
    *
    * @param {string} name vhost name
-   * @return {Promise<RMConnect.vhostConnectionsStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
+   * @return {Promise<RMConnect.VhostConnectionsStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
    */
-  getVhostConnection(name: string): Promise<RMConnect.vhostConnectionsStatus[] | boolean>;
+  getVhostConnection(name: string): Promise<RMConnect.VhostConnectionsStatus[] | boolean>;
 
   /**
    * Get vhost all opening channel list
    *
    * @param {string} name vhost name
    * @param {RabbitManager.PaginationParams} options paginationParams
-   * @return {Promise<RMChannel.vhostChannelStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
+   * @return {Promise<RMChannel.VhostChannelStatus[] | boolean>} if cant connect to server or vhost not exist specific return [false]
    */
-  getVhostOpenChannels(name: string, options: RabbitManager.PaginationParams): Promise<RMChannel.vhostChannelStatus[] | boolean>;
+  getVhostOpenChannels(name: string, options: RabbitManager.PaginationParams): Promise<RMChannel.VhostChannelStatus[] | boolean>;
 
   /**
    * Create a new vhost

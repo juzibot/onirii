@@ -56,6 +56,7 @@ export class RabbitEnhancer {
       }
       this.channelPool.push(channelInstance);
     }
+    this.connectionPoint = 0;
     // init resource
     if (this.configure.resourceConfigure) {
       await this.initExchange();
@@ -83,8 +84,10 @@ export class RabbitEnhancer {
     const currentConsumer = this.consumerPool.find(element => element.consumerName === name);
     if (currentConsumer) {
       await currentConsumer.kill();
+      this.consumerPool = this.consumerPool.filter(element => element.consumerName !== name);
+      return;
     }
-    this.consumerPool = this.consumerPool.filter(element => element.consumerName !== name);
+    throw new Error(`Can't kill unknown consumer ${ name }`);
   }
 
   public async pushOperation(processor: (currentChannel: AmqpChannelService) => Promise<any>): Promise<any> {
@@ -92,9 +95,7 @@ export class RabbitEnhancer {
   }
 
   public async close(): Promise<void> {
-    for (let amqpConnectService of this.connectionPool) {
-      await amqpConnectService.close();
-    }
+    await Promise.all(this.connectionPool.map(element => element.close()));
   }
 
 
@@ -109,6 +110,7 @@ export class RabbitEnhancer {
           .createExchangeIfNotExist(exchangeInitDatum.name, exchangeInitDatum.type, exchangeInitDatum.options);
       }
     }
+    this.channelPoint = 0;
   }
 
   private async initQueue(): Promise<void> {
@@ -121,6 +123,7 @@ export class RabbitEnhancer {
         await this.getNextChannel().createQueueIfNotExist(queueInitDatum.name, queueInitDatum.options);
       }
     }
+    this.channelPoint = 0;
   }
 
   private async initBind(): Promise<void> {
@@ -135,6 +138,7 @@ export class RabbitEnhancer {
         await this.bindExchangeToExchange(bindListDatum);
       }
     }
+    this.channelPoint = 0;
   }
 
   private async bindQueueToExchange(configure: RabbitEnhancerBind) {

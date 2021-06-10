@@ -45,14 +45,29 @@ export class AmqpEnhancerConsumerWrapper {
   ) {
     this.consumerName = consumerName;
     this.parentService = parentService;
-    this.parentService.logger.info(`Creating Consumer ${this.consumerName}`);
+    this.parentService.logger.info(`Creating Consumer ${ this.consumerName }`);
     this.consumeTargetQueue = queue;
     this.processor = processor;
     this.delay = delay < 10 ? 10 : delay;
     this.options = options;
     this.consumer().catch(err => {
-      this.parentService.logger.error(`Consumer ${this.consumerName} Got Some Error: ${err.stack}`);
+      this.parentService.logger.error(`Consumer ${ this.consumerName } Got Some Error: ${ err.stack }`);
     });
+  }
+
+  /**
+   * kill this enhancer consumer
+   *
+   * @return {Promise<void>} --
+   */
+  public async kill(): Promise<void> {
+    if (this.intervalInstance) {
+      clearInterval(this.intervalInstance);
+    }
+    while (this.processing !== 0) {
+      await new Promise(r => setTimeout(r, 50));
+    }
+    this.parentService.logger.warn(`Killed Consumer ${ this.consumerName }`);
   }
 
   /**
@@ -65,7 +80,7 @@ export class AmqpEnhancerConsumerWrapper {
     this.intervalInstance = setInterval(() => {
       this.consumption().catch(err => {
         this.processing--;
-        this.parentService.logger.error(`Consumer ${this.consumerName} Consumption Got Some Error: ${JSON.stringify(err)}`);
+        this.parentService.logger.error(`Consumer ${ this.consumerName } Consumption Got Some Error: ${ JSON.stringify(err) }`);
       });
     }, this.delay);
   }
@@ -81,21 +96,6 @@ export class AmqpEnhancerConsumerWrapper {
       }
     }
     this.processing--;
-  }
-
-  /**
-   * kill this enhancer consumer
-   *
-   * @return {Promise<void>} --
-   */
-  public async kill(): Promise<void> {
-    if (this.intervalInstance) {
-      clearInterval(this.intervalInstance);
-    }
-    while (this.processing !== 0) {
-      await new Promise(r => setTimeout(r, 50));
-    }
-    this.parentService.logger.warn(`Killed Consumer ${this.consumerName}`);
   }
 
 }

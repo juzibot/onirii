@@ -22,7 +22,7 @@ export class LogFactory {
       console: { type: 'console', layout: { type: 'colored' } },
       default: {
         type: 'dateFile',
-        filename: `${LogFactory.currentPath}/onirii.log`,
+        filename: `${ LogFactory.currentPath }/onirii.log`,
         pattern: '.yyyy-MM-dd',
         keepFileExt: true,
         encoding: 'UTF-8',
@@ -74,7 +74,7 @@ export class LogFactory {
     return {
       [key]: {
         type: 'dateFile',
-        filename: `${this.currentPath}/onirii-${key}.log`,
+        filename: `${ this.currentPath }/onirii-${ key }.log`,
         pattern: '.yyyy-MM-dd',
         keepFileExt: true,
         encoding: 'UTF-8',
@@ -92,7 +92,7 @@ export class LogFactory {
   private static generateCategories(key: string) {
     return {
       [key]: {
-        appenders: [`${key}`, 'console'],
+        appenders: [`${ key }`, 'console'],
         level: 'debug',
       },
     };

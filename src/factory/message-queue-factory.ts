@@ -1,3 +1,3 @@
-export class MessageQueueFactory{
+export class MessageQueueFactory {
 
 }

@@ -1,3 +1,3 @@
-export interface RabbitManagerPoliciesInterface{
+export interface RabbitManagerPoliciesInterface {
 
 }

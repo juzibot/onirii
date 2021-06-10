@@ -13,11 +13,11 @@ export interface AmqpMessageInterface {
   consume(queue: string, processor: (msg: amqp.ConsumeMessage | null) => void, options?: Options.Consume): AmqpOriginalConsumerWrapper;
 
   enhancerConsume(
-      queue: string,
-      processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>,
-      delay: number,
-      consumeName?: string,
-      options?: Options.Get,
+    queue: string,
+    processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>,
+    delay: number,
+    consumeName?: string,
+    options?: Options.Get,
   ): AmqpEnhancerConsumerWrapper;
 
   killConsume(consumeTag: string): Promise<boolean>;

@@ -39,7 +39,7 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
     this.instanceName = name;
     // init logger
     this.logger = LogFactory.create(name.substr(0, this.instanceName.lastIndexOf('-')));
-    this.logger.info(`Creating Channel Service ${this.instanceName}`);
+    this.logger.info(`Creating Channel Service ${ this.instanceName }`);
     // inject amqp channel/confirmChannel instance
     if (!channel) {
       throw new Error('Channel Service Inject Error, Current Amqp Channel Undefined');
@@ -47,50 +47,12 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
     this.currentChannelInstance = channel;
   }
 
-  public async ackMessage(message: amqp.Message, allUp?: boolean): Promise<void> {
-    await this.currentChannelInstance.ack(message, allUp);
-  }
-
   public async ackAllMessage(): Promise<void> {
     await this.currentChannelInstance.ackAll();
   }
 
-  public async createExchangeIfNotExist(name: string, type: string, options?: Options.AssertExchange): Promise<Replies.AssertExchange> {
-    return this.currentChannelInstance.assertExchange(name, type, options);
-  }
-
-  public async bindExchangeToExchange(target: string, from: string, key: string, args?: any): Promise<Replies.Empty> {
-    return this.currentChannelInstance.bindExchange(target, from, key, args);
-  }
-
-  public async bindQueueToExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty> {
-    return this.currentChannelInstance.bindQueue(name, exchange, bindKey, args);
-  }
-
-  public async killConsume(consumerName: string): Promise<boolean> {
-    let targetConsumer: AmqpOriginalConsumerWrapper | AmqpEnhancerConsumerWrapper | undefined;
-    targetConsumer = this.originalConsumerPool.find(element => element.consumerName === consumerName);
-    if (targetConsumer) {
-      await targetConsumer.kill();
-      this.originalConsumerPool = this.originalConsumerPool.filter(element => element.consumerName !== consumerName);
-      return true;
-    }
-    targetConsumer = this.enhancerConsumerPool.find(element => element.consumerName === consumerName);
-    if (targetConsumer) {
-      await targetConsumer.kill();
-      this.enhancerConsumerPool = this.enhancerConsumerPool.filter(element => element.consumerName !== consumerName);
-      return true;
-    }
-    this.logger.error(`Can't Kill Unknown Consumer ${consumerName}`);
-    return false;
-  }
-
-  public async getExchangeStatus(name: string): Promise<Replies.Empty> {
-    return this.currentChannelInstance.checkExchange(name);
-  }
-
-  public async createQueueIfNotExist(name: string, options?: Options.AssertQueue): Promise<Replies.AssertQueue> {
-    return this.currentChannelInstance.assertQueue(name, options);
+  public async ackMessage(message: amqp.Message, allUp?: boolean): Promise<void> {
+    await this.currentChannelInstance.ack(message, allUp);
   }
 
   public consume(queue: string, processor: (msg: amqp.ConsumeMessage | null) => void, options?: Options.Consume)
@@ -99,14 +61,6 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
     const originalConsumer = new AmqpOriginalConsumerWrapper(consumerName, this, queue, processor, options);
     this.originalConsumerPool.push(originalConsumer);
     return originalConsumer;
-  }
-
-  public async deleteExchange(name: string, options?: Options.DeleteExchange): Promise<Replies.Empty> {
-    return this.currentChannelInstance.deleteExchange(name, options);
-  }
-
-  public async deleteQueue(name: string, options?: Options.DeleteQueue): Promise<Replies.DeleteQueue> {
-    return this.currentChannelInstance.deleteQueue(name, options);
   }
 
   /**
@@ -139,8 +93,30 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
     return this.currentChannelInstance.get(queueName, options);
   }
 
-  public async getQueueStatus(name: string): Promise<Replies.AssertQueue> {
-    return this.currentChannelInstance.checkQueue(name);
+  public async killConsume(consumerName: string): Promise<boolean> {
+    let targetConsumer: AmqpOriginalConsumerWrapper | AmqpEnhancerConsumerWrapper | undefined;
+    targetConsumer = this.originalConsumerPool.find(element => element.consumerName === consumerName);
+    if (targetConsumer) {
+      await targetConsumer.kill();
+      this.originalConsumerPool = this.originalConsumerPool.filter(element => element.consumerName !== consumerName);
+      return true;
+    }
+    targetConsumer = this.enhancerConsumerPool.find(element => element.consumerName === consumerName);
+    if (targetConsumer) {
+      await targetConsumer.kill();
+      this.enhancerConsumerPool = this.enhancerConsumerPool.filter(element => element.consumerName !== consumerName);
+      return true;
+    }
+    this.logger.error(`Can't Kill Unknown Consumer ${ consumerName }`);
+    return false;
+  }
+
+  public async nackAllMessage(reQueue?: boolean): Promise<void> {
+    this.currentChannelInstance.nackAll(reQueue);
+  }
+
+  public async recover(): Promise<Replies.Empty> {
+    return this.currentChannelInstance.recover();
   }
 
   public async rejectMessage(message: amqp.Message, allUp?: boolean, reQueue?: boolean): Promise<void> {
@@ -151,23 +127,6 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
     }
   }
 
-  public async nackAllMessage(reQueue?: boolean): Promise<void> {
-    this.currentChannelInstance.nackAll(reQueue);
-  }
-
-  public async setPrefetchCount(count: number, global?: boolean): Promise<Replies.Empty> {
-    return this.currentChannelInstance.prefetch(count, global);
-  }
-
-  public async purgeQueue(name: string): Promise<Replies.PurgeQueue> {
-    this.logger.warn(`Purging Queue ${name}`);
-    return this.currentChannelInstance.purgeQueue(name);
-  }
-
-  public async recover(): Promise<Replies.Empty> {
-    return this.currentChannelInstance.recover();
-  }
-
   public async sendMessageToExchange(exchangeName: string, key: string, content: Buffer, options?: Options.Publish): Promise<boolean> {
     return this.currentChannelInstance.publish(exchangeName, key, content, options);
   }
@@ -176,8 +135,49 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
     return this.currentChannelInstance.sendToQueue(queueName, content, options);
   }
 
+  public async setPrefetchCount(count: number, global?: boolean): Promise<Replies.Empty> {
+    return this.currentChannelInstance.prefetch(count, global);
+  }
+
+  public async bindExchangeToExchange(target: string, from: string, key: string, args?: any): Promise<Replies.Empty> {
+    return this.currentChannelInstance.bindExchange(target, from, key, args);
+  }
+
+  public async createExchangeIfNotExist(name: string, type: string, options?: Options.AssertExchange): Promise<Replies.AssertExchange> {
+    return this.currentChannelInstance.assertExchange(name, type, options);
+  }
+
+  public async deleteExchange(name: string, options?: Options.DeleteExchange): Promise<Replies.Empty> {
+    return this.currentChannelInstance.deleteExchange(name, options);
+  }
+
+  public async getExchangeStatus(name: string): Promise<Replies.Empty> {
+    return this.currentChannelInstance.checkExchange(name);
+  }
+
   public async unbindExchangeToExchange(target: string, from: string, key: string, args?: any): Promise<Replies.Empty> {
     return this.currentChannelInstance.unbindExchange(target, from, key, args);
+  }
+
+  public async bindQueueToExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty> {
+    return this.currentChannelInstance.bindQueue(name, exchange, bindKey, args);
+  }
+
+  public async createQueueIfNotExist(name: string, options?: Options.AssertQueue): Promise<Replies.AssertQueue> {
+    return this.currentChannelInstance.assertQueue(name, options);
+  }
+
+  public async deleteQueue(name: string, options?: Options.DeleteQueue): Promise<Replies.DeleteQueue> {
+    return this.currentChannelInstance.deleteQueue(name, options);
+  }
+
+  public async getQueueStatus(name: string): Promise<Replies.AssertQueue> {
+    return this.currentChannelInstance.checkQueue(name);
+  }
+
+  public async purgeQueue(name: string): Promise<Replies.PurgeQueue> {
+    this.logger.warn(`Purging Queue ${ name }`);
+    return this.currentChannelInstance.purgeQueue(name);
   }
 
   public async unbindQueueToExchange(name: string, exchange: string, bindKey: string, args?: any): Promise<Replies.Empty> {
@@ -192,12 +192,12 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
       await enhancerConsumerWrapper.kill();
     }
     await this.currentChannelInstance.close();
-    this.logger.warn(`Killed Channel ${this.instanceName}`);
+    this.logger.warn(`Killed Channel ${ this.instanceName }`);
   }
 
   private getNextConsumerName() {
     this.consumerPosition++;
-    return `${this.instanceName}-consumer-${this.consumerPosition}`;
+    return `${ this.instanceName }-consumer-${ this.consumerPosition }`;
   }
 
 }

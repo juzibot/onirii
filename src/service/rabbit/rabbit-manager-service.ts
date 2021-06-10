@@ -36,7 +36,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    */
   constructor(name: string, managerApi?: string, auth?: string) {
     this.instanceName = name;
-    this.logger = LogFactory.create(`${this.instanceName}-manager-service`);
+    this.logger = LogFactory.create(`${ this.instanceName }-manager-service`);
     this.apiRequester = new ApiRequestUtil(new RabbitManagerResponseUtil(this.logger));
     this.managerApi = managerApi;
     if (!this.managerApi) {
@@ -49,7 +49,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
     if (!this.managerApi || !currentAuth) {
       throw new Error('Must Specific Manager ApiUrl And Auth, You Can Defined At Env Or Params');
     }
-    this.managerAuth = `Authorization: Basic ${Buffer.from(currentAuth).toString('base64')}`;
+    this.managerAuth = `Authorization: Basic ${ Buffer.from(currentAuth).toString('base64') }`;
   }
 
   /**
@@ -68,20 +68,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    */
   async checkAlarms(): Promise<any> {
     return this.apiRequester.getRequest(
-      `${this.managerApi}/health/checks/alarms`,
-      undefined,
-      [this.managerAuth],
-    );
-  }
-
-  /**
-   * Check all local alarms
-   *
-   * @return {Promise<any>} if cant connect to server specific return [false]
-   */
-  async checkLocalAlarms(): Promise<any> {
-    return this.apiRequester.getRequest(
-      `${this.managerApi}/health/checks/local-alarms`,
+      `${ this.managerApi }/health/checks/alarms`,
       undefined,
       [this.managerAuth],
     );
@@ -96,7 +83,46 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    */
   async checkCertificate(leftTime: number, unit: 'days' | 'weeks' | 'months' | 'years'): Promise<any> {
     return this.apiRequester.getRequest(
-      `${this.managerApi}/health/checks/certificate-expiration/${leftTime}/${unit}`,
+      `${ this.managerApi }/health/checks/certificate-expiration/${ leftTime }/${ unit }`,
+      undefined,
+      [this.managerAuth],
+    );
+  }
+
+  /**
+   * Check all local alarms
+   *
+   * @return {Promise<any>} if cant connect to server specific return [false]
+   */
+  async checkLocalAlarms(): Promise<any> {
+    return this.apiRequester.getRequest(
+      `${ this.managerApi }/health/checks/local-alarms`,
+      undefined,
+      [this.managerAuth],
+    );
+  }
+
+  /**
+   * Check node mirror sync status
+   *
+   * @return {Promise<HealthCheckBaseRs | boolean>} if cant connect to server specific return [false]
+   */
+  async checkNodeMirrorSyncCritical(): Promise<RMHealth.HealthCheckBaseRs | boolean> {
+    return this.apiRequester.getRequest(
+      `${ this.managerApi }/health/checks/node-is-mirror-sync-critical`,
+      undefined,
+      [this.managerAuth],
+    );
+  }
+
+  /**
+   * Check node quorum status
+   *
+   * @return {Promise<HealthCheckBaseRs | boolean>} if cant connect to server specific return [false]
+   */
+  async checkNodeQuorumCritical(): Promise<RMHealth.HealthCheckBaseRs> {
+    return this.apiRequester.getRequest(
+      `${ this.managerApi }/health/checks/node-is-quorum-critical`,
       undefined,
       [this.managerAuth],
     );
@@ -110,33 +136,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    */
   async checkPortHealth(port: number): Promise<RMHealth.HealthCheckPortRs | boolean> {
     return this.apiRequester.getRequest(
-      `${this.managerApi}/health/checks/port-listener/${port}`,
-      undefined,
-      [this.managerAuth],
-    );
-  }
-
-  /**
-   * Check node mirror sync status
-   *
-   * @return {Promise<HealthCheckBaseRs | boolean>} if cant connect to server specific return [false]
-   */
-  async checkNodeMirrorSyncCritical(): Promise<RMHealth.HealthCheckBaseRs | boolean> {
-    return this.apiRequester.getRequest(
-      `${this.managerApi}/health/checks/node-is-mirror-sync-critical`,
-      undefined,
-      [this.managerAuth],
-    );
-  }
-
-  /**
-   * Check node quorum status
-   *
-   * @return {Promise<HealthCheckBaseRs | boolean>} if cant connect to server specific return [false]
-   */
-  async checkNodeQuorumCritical(): Promise<RMHealth.HealthCheckBaseRs> {
-    return this.apiRequester.getRequest(
-      `${this.managerApi}/health/checks/node-is-quorum-critical`,
+      `${ this.managerApi }/health/checks/port-listener/${ port }`,
       undefined,
       [this.managerAuth],
     );
@@ -150,7 +150,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    */
   public async checkProtocol(name: 'amqp091' | 'amqp10' | 'mqtt' | 'stomp' | 'web-mqtt' | 'web-stomp'): Promise<RMHealth.HealthCheckProtocolRs | boolean> {
     return this.apiRequester.getRequest(
-      `${this.managerApi}/health/checks/protocol-listener/${name}`,
+      `${ this.managerApi }/health/checks/protocol-listener/${ name }`,
       undefined,
       [this.managerAuth],
     );
@@ -163,7 +163,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    */
   checkVirtualHosts(): Promise<any> {
     return this.apiRequester.getRequest(
-      `${this.managerApi}/health/checks/virtual-hosts`,
+      `${ this.managerApi }/health/checks/virtual-hosts`,
       undefined,
       [this.managerAuth],
     );
@@ -178,13 +178,13 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    */
   async createVhost(name: string, params?: RMVhost.CreateVhostParams): Promise<boolean> {
     const rs = await this.apiRequester.putRequest(
-      `${this.managerApi}/vhosts/${name}`,
+      `${ this.managerApi }/vhosts/${ name }`,
       true,
       params,
       [this.managerAuth],
     );
     if (!rs) {
-      this.logger.warn(`Target VHost Already Exist:${name}`);
+      this.logger.warn(`Target VHost Already Exist:${ name }`);
     }
     return rs;
   }
@@ -201,7 +201,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    */
   async deleteVhost(name: string, checkImmediately = false, params?: any): Promise<boolean> {
     const rs = await this.apiRequester.deleteRequest(
-      `${this.managerApi}/vhosts/${name}`,
+      `${ this.managerApi }/vhosts/${ name }`,
       params,
       [this.managerAuth],
     );
@@ -219,8 +219,9 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   public async getVhost(): Promise<RMVhost.VhostDataModel[]>;
   public async getVhost(name: string): Promise<RMVhost.VhostDataModel | boolean>;
   public async getVhost(name?: string): Promise<RMVhost.VhostDataModel[] | RMVhost.VhostDataModel | boolean> {
+    const currentName = name ? `/${ name }` : '';
     return this.apiRequester.getRequest(
-      `${this.managerApi}/vhosts${name ? `/${name}` : ''}`,
+      `${ this.managerApi }/vhosts${ currentName }`,
       undefined,
       [this.managerAuth],
     );
@@ -234,7 +235,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    */
   async getVhostConnection(name: string): Promise<RMConnect.VhostConnectionsStatus[] | boolean> {
     return this.apiRequester.getRequest(
-      `${this.managerApi}/vhosts/${name}/connections`,
+      `${ this.managerApi }/vhosts/${ name }/connections`,
       undefined,
       [this.managerAuth],
     );
@@ -249,7 +250,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    */
   async getVhostOpenChannels(name: string, options?: RabbitManager.PaginationParams): Promise<RMChannel.VhostChannelStatus[] | boolean> {
     return this.apiRequester.getRequest(
-      `${this.managerApi}/vhosts/${name}/channels`,
+      `${ this.managerApi }/vhosts/${ name }/channels`,
       options,
       [this.managerAuth],
     );
@@ -263,30 +264,8 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    */
   async startNode(vhostName: string, nodeName: string): Promise<any> {
     return this.apiRequester.postRequest(
-      `${this.managerApi}/vhosts/${vhostName}/start/${nodeName}`,
+      `${ this.managerApi }/vhosts/${ vhostName }/start/${ nodeName }`,
       true,
-      undefined,
-      [this.managerAuth],
-    );
-  }
-
-  /**
-   * Get exchange status
-   *
-   * @return {Promise<RMExchange.ExchangeStatusModel[] | RMExchange.ExchangeStatusModel | boolean>} if cant connect to server or exchange    not exist specific return [false]
-   */
-  public async getExchange(): Promise<RMExchange.ExchangeStatusModel[]>;
-  public async getExchange(vhost: string): Promise<RMExchange.ExchangeStatusModel[]>;
-  public async getExchange(vhost: string, name: string): Promise<RMExchange.ExchangeStatusModel | boolean>
-  public async getExchange(vhost?: string, name?: string)
-    : Promise<RMExchange.ExchangeStatusModel[] | RMExchange.ExchangeStatusModel | boolean> {
-    if (!vhost && name) {
-      throw new Error('Must Specific Vhost When Getting Current Exchange');
-    }
-    const currentVhost = vhost ? `/${vhost}` : '';
-    const currentName = name ? `/${name}` : '';
-    return this.apiRequester.getRequest(
-      `${this.managerApi}/exchanges${currentVhost}${currentName}`,
       undefined,
       [this.managerAuth],
     );
@@ -301,8 +280,8 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
    * @return {Promise<boolean>} if already exist return false and print warn
    */
   public async createExchange(vhost: string, name: string, options: RMExchange.CreateOptions): Promise<boolean> {
-    return await this.apiRequester.putRequest(
-      `${this.managerApi}/exchanges/${vhost}/${name}`,
+    return this.apiRequester.putRequest(
+      `${ this.managerApi }/exchanges/${ vhost }/${ name }`,
       true,
       options,
       [this.managerAuth],
@@ -327,7 +306,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
     options?: RMExchange.DeleteOptions,
   ): Promise<boolean> {
     const rs = await this.apiRequester.deleteRequest(
-      `${this.managerApi}/exchanges/${vhost}/${name}`,
+      `${ this.managerApi }/exchanges/${ vhost }/${ name }`,
       options,
       [this.managerAuth],
     );
@@ -335,6 +314,31 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
       return await this.getExchange(vhost, name) === false;
     }
     return rs;
+  }
+
+  /**
+   * Get exchange status
+   *
+   * @return {Promise<RMExchange.ExchangeStatusModel[] | RMExchange.ExchangeStatusModel | boolean>} if cant connect to server or exchange    not exist specific return [false]
+   */
+  public async getExchange(): Promise<RMExchange.ExchangeStatusModel[]>;
+
+  public async getExchange(vhost: string): Promise<RMExchange.ExchangeStatusModel[]>;
+
+  public async getExchange(vhost: string, name: string): Promise<RMExchange.ExchangeStatusModel | boolean>
+
+  public async getExchange(vhost?: string, name?: string)
+    : Promise<RMExchange.ExchangeStatusModel[] | RMExchange.ExchangeStatusModel | boolean> {
+    if (!vhost && name) {
+      throw new Error('Must Specific Vhost When Getting Current Exchange');
+    }
+    const currentVhost = vhost ? `/${ vhost }` : '';
+    const currentName = name ? `/${ name }` : '';
+    return this.apiRequester.getRequest(
+      `${ this.managerApi }/exchanges${ currentVhost }${ currentName }`,
+      undefined,
+      [this.managerAuth],
+    );
   }
 
 }

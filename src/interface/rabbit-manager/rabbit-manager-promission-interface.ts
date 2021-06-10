@@ -1,3 +1,3 @@
-export interface RabbitManagerPromissionInterface{
+export interface RabbitManagerPromissionInterface {
 
 }

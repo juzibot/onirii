@@ -1,4 +1,4 @@
-export enum MessageQueueEnum{
+export enum MessageQueueEnum {
   AMQ = 'AMQ',
   SQS = 'SQS',
   RABBIT = 'RABBIT'

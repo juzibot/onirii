@@ -1,6 +1,6 @@
-export namespace RMQueue{
+export namespace RMQueue {
 
-  export interface CreateOptions{
+  export interface CreateOptions {
 
   }
 

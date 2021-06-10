@@ -1,6 +1,6 @@
 import { Options } from 'amqplib';
 
-export interface OriginalMessageInterface{
+export interface OriginalMessageInterface {
 
   sendMessage(targetQueueOrExchange: string, key: string, message: any, options: messageOptions): Promise<sendMessageRsType>;
 

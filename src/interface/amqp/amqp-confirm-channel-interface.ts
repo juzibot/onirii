@@ -1,7 +1,7 @@
 /**
  *
  */
-export interface AmqpConfirmChannelInterface{
+export interface AmqpConfirmChannelInterface {
 
   /**
    *

@@ -18,7 +18,7 @@ test('amqp-channel-service-test', async () => {
 
   // create test endearment
   await defaultChannel.createQueueIfNotExist('testQueue');
-  await defaultChannel.createQueueIfNotExist('testQueue2')
+  await defaultChannel.createQueueIfNotExist('testQueue2');
   await defaultChannel.createExchangeIfNotExist('testExchange', 'direct');
   await defaultChannel.createExchangeIfNotExist('testExchange2', 'direct');
 
@@ -45,7 +45,7 @@ test('amqp-channel-service-test', async () => {
   await new Promise(r => setTimeout(r, 5 * 1000));
 
   let position = 0;
-  const consumer = defaultChannel.consume('testQueue', (msg) => {
+  const consumer = defaultChannel.consume('testQueue', msg => {
     if (msg) {
       if (position < 1) {
         defaultChannel.ackMessage(msg);
@@ -56,7 +56,7 @@ test('amqp-channel-service-test', async () => {
     }
   });
 
-  const consumer2 = defaultChannel.enhancerConsume('testQueue', async (msg) => {
+  const consumer2 = defaultChannel.enhancerConsume('testQueue', async msg => {
     if (msg) {
       position++;
     }
@@ -82,11 +82,11 @@ test('amqp-channel-service-test', async () => {
   await defaultChannel.deleteQueue('testQueue');
   await defaultChannel.deleteExchange('testExchange');
 
-  defaultChannel.enhancerConsume('testQueue2', async (msg) => {
+  defaultChannel.enhancerConsume('testQueue2', async msg => {
     return !!msg;
   }, 500);
 
-  defaultChannel.consume('testQueue2', (msg) => {
+  defaultChannel.consume('testQueue2', msg => {
     if (msg) {
     }
   });

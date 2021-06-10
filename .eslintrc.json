@@ -1,0 +1,24 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
+  "settings": {
+    "compilerOptions": {
+      "target": "es2018",
+      "module": "commonjs",
+      "outDir": "./lib",
+      "sourceMap": true
+    }
+  },
+  "extends": [
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "array-bracket-spacing": "error",
+    "array-bracket-newline": "error",
+    "no-confusing-arrow": "error",
+    "no-extra-parens": "error",
+    "arrow-parens": ["error", "as-needed"]
+  }
+}

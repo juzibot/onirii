@@ -185,12 +185,8 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   }
 
   public async close(): Promise<void> {
-    for (let originalConsumerWrapper of this.originalConsumerPool) {
-      await originalConsumerWrapper.kill();
-    }
-    for (let enhancerConsumerWrapper of this.enhancerConsumerPool) {
-      await enhancerConsumerWrapper.kill();
-    }
+    await Promise.all(this.originalConsumerPool.map(element => element.kill()));
+    await Promise.all(this.enhancerConsumerPool.map(element => element.kill()));
     await this.currentChannelInstance.close();
     this.logger.warn(`Killed Channel ${ this.instanceName }`);
   }

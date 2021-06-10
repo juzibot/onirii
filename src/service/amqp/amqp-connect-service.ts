@@ -95,7 +95,6 @@ export class AmqpConnectService implements AmqpConnectInterface {
     let targetChannel: AmqpChannelService | AmqpConfirmChannelService | AmqpOriginalChannelWrapper | AmqpOriginalConfirmChannelWrapper | undefined;
     targetChannel = this.serviceChannelPool.find(element => element.instanceName === channelName);
     if (targetChannel) {
-      await targetChannel.close();
       this.serviceChannelPool = this.serviceChannelPool.filter(element => element.instanceName !== channelName);
       return true;
     }
@@ -203,9 +202,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * @private
    */
   private async killServiceChannel(): Promise<void> {
-    for (let channelPoolElement of this.serviceChannelPool) {
-      await channelPoolElement.close();
-    }
+    await Promise.all(this.serviceChannelPool.map(element => element.close()));
   }
 
   /**

@@ -10,7 +10,7 @@ export class AmqpEnhancerConsumerWrapper {
   public readonly consumerName: string;
   // prent channel service
   private readonly parentService: AmqpChannelService;
-  //
+  // consumer target queue
   private readonly consumeTargetQueue: string;
   // message processor
   private readonly processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>;
@@ -51,7 +51,7 @@ export class AmqpEnhancerConsumerWrapper {
     this.delay = delay < 10 ? 10 : delay;
     this.options = options;
     this.consumer().catch(err => {
-      this.parentService.logger.error(`Consumer ${ this.consumerName } Got Some Error: ${ err.stack }`);
+      this.parentService.logger.error(`Consumer ${ this.consumerName } Got Some Error: ${ err }`);
     });
   }
 
@@ -61,13 +61,16 @@ export class AmqpEnhancerConsumerWrapper {
    * @return {Promise<void>} --
    */
   public async kill(): Promise<void> {
+    this.parentService.logger.warn(`Killing consumer ${ this.consumerName }`);
     if (this.intervalInstance) {
       clearInterval(this.intervalInstance);
+      this.intervalInstance = undefined;
     }
     while (this.processing !== 0) {
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 1000));
+      this.parentService.logger.info(`Killing consumer ${ this.consumerName } left process ${ this.processing }`);
     }
-    this.parentService.logger.warn(`Killed Consumer ${ this.consumerName }`);
+    this.parentService.logger.warn(`Killed consumer ${ this.consumerName }`);
   }
 
   /**
@@ -86,6 +89,9 @@ export class AmqpEnhancerConsumerWrapper {
   }
 
   private async consumption() {
+    if (this.processing >= 100) {
+      return;
+    }
     this.processing++;
     const message = await this.parentService.getCurrentMessage(this.consumeTargetQueue, this.options);
     if (message) {

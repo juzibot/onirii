@@ -13,7 +13,7 @@ export class AmqpEnhancerConsumerWrapper {
   // consumer target queue
   private readonly consumeTargetQueue: string;
   // message processor
-  private readonly processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>;
+  private readonly processor: EnhancerConsumerProcessor;
   // each message processed delay
   private readonly delay: number;
   // get message options
@@ -39,7 +39,7 @@ export class AmqpEnhancerConsumerWrapper {
     consumerName: string,
     parentService: AmqpChannelService,
     queue: string,
-    processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>,
+    processor: EnhancerConsumerProcessor,
     delay = 10,
     options?: Options.Get,
   ) {
@@ -105,3 +105,8 @@ export class AmqpEnhancerConsumerWrapper {
   }
 
 }
+
+/**
+ * Consumer processor type
+ */
+export type EnhancerConsumerProcessor = (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>;

@@ -5,7 +5,7 @@ import { LogFactory } from '../../factory/log-factory';
 import { AmqpExchangeInterface } from '../../interface/amqp/amqp-exchange-interface';
 import { AmqpMessageInterface } from '../../interface/amqp/amqp-message-interface';
 import { AmqpQueueInterface } from '../../interface/amqp/amqp-queue-interface';
-import { AmqpEnhancerConsumerWrapper } from '../../wrapper/amqp-enhancer-consumer-wrapper';
+import { AmqpEnhancerConsumerWrapper, EnhancerConsumerProcessor } from '../../wrapper/amqp-enhancer-consumer-wrapper';
 import { AmqpOriginalConsumerWrapper } from '../../wrapper/amqp-original-consumer-wrapper';
 
 /**
@@ -77,11 +77,7 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
    * @return {Promise<AmqpEnhancerConsumerWrapper>}
    */
   public enhancerConsume(
-    queue: string,
-    processor: (msg: amqp.GetMessage, belongChannel: AmqpChannelService) => Promise<boolean | undefined>,
-    delay: number = 0,
-    consumeName?: string,
-    options?: Options.Get,
+    queue: string, processor: EnhancerConsumerProcessor, delay: number = 0, consumeName?: string, options?: Options.Get,
   ): AmqpEnhancerConsumerWrapper {
     const consumerName: string = consumeName || this.getNextConsumerName();
     const enhancerConsumer = new AmqpEnhancerConsumerWrapper(consumerName, this, queue, processor, delay, options);

@@ -1,8 +1,7 @@
-import amqp from 'amqplib';
 import { Options } from 'amqplib/properties';
 import { RMExchange } from '../model/rabbit-manager/rabbit-manager-exchange-namespace';
 import { RMQueue } from '../model/rabbit-manager/rabbit-manager-queue-namespace';
-import { AmqpEnhancerConsumerWrapper } from '../wrapper/amqp-enhancer-consumer-wrapper';
+import { AmqpEnhancerConsumerWrapper, EnhancerConsumerProcessor } from '../wrapper/amqp-enhancer-consumer-wrapper';
 import { AmqpChannelService } from './amqp/amqp-channel-service';
 import { AmqpConfirmChannelService } from './amqp/amqp-confirm-channel-service';
 import { AmqpConnectService } from './amqp/amqp-connect-service';
@@ -66,18 +65,28 @@ export class RabbitEnhancer {
   }
 
   public async addConsumer(
-    queue: string,
-    processor: (msg: amqp.GetMessage, channel: AmqpChannelService) => Promise<boolean>,
-    delay?: number,
-    consumerName?: string,
-    options?: Options.Get,
-  ): Promise<AmqpEnhancerConsumerWrapper> {
-    const consumer = this.getNextChannel().enhancerConsume(queue, processor, delay, consumerName, options);
-    if (consumer) {
-      this.consumerPool.push(consumer);
-      return consumer;
+    queue: string, processor: EnhancerConsumerProcessor, delay?: number, replica?: 1, options?: Options.Get,
+  ): Promise<AmqpEnhancerConsumerWrapper>;
+  public async addConsumer(
+    queue: string, processor: EnhancerConsumerProcessor, delay?: number, replica?: number, options?: Options.Get,
+  ): Promise<AmqpEnhancerConsumerWrapper[]>;
+  public async addConsumer(
+    queue: string, processor: EnhancerConsumerProcessor, delay?: number, replica = 1, options?: Options.Get,
+  ): Promise<AmqpEnhancerConsumerWrapper | AmqpEnhancerConsumerWrapper[]> {
+    const consumerPool = []
+    for (let i = 0; i < replica; i++) {
+      const consumer = this.getNextChannel().enhancerConsume(queue, processor, delay, undefined, options);
+      if (consumer) {
+        this.consumerPool.push(consumer);
+        consumerPool.push(consumer);
+        continue;
+      }
+      throw new Error(`Can't create consumer, This is a unexpect error please create issue with code demo`);
     }
-    throw new Error(`Can't create consumer, This is a unexpect error please create issue with code demo`);
+    if (replica === 1) {
+      return consumerPool[0];
+    }
+    return consumerPool;
   }
 
   public async killConsumer(name: string): Promise<void> {

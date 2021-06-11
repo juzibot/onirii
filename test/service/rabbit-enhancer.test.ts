@@ -33,20 +33,30 @@ test('rabbit-enhancer-test', async () => {
 
   await rabbitEnhancer.ready();
 
-  for (let i = 0; i < 10; i++) {
-    await rabbitEnhancer.addConsumer('aqueue', async (msg, channel) => {
-      if (msg) {
-        msg.content.toString();
-        await new Promise(r => setTimeout(r, 15 * 1000));
-        await channel.sendMessageToQueue('testQueue2', Buffer.from(msg.content.toString()));
-      }
-      return true;
-    }, 100);
-  }
+  const consumerList = await rabbitEnhancer.addConsumer('aqueue', async (msg, channel) => {
+    if (msg) {
+      msg.content.toString();
+      await new Promise(r => setTimeout(r, 15 * 1000));
+      await channel.sendMessageToQueue('testQueue2', Buffer.from(msg.content.toString()));
+    }
+    return true;
+  }, 100, 10);
+
+  const singleConsumer = await rabbitEnhancer.addConsumer('aqueue', async (msg, channel) => {
+    if (msg) {
+      msg.content.toString();
+      await new Promise(r => setTimeout(r, 15 * 1000));
+      await channel.sendMessageToQueue('testQueue2', Buffer.from(msg.content.toString()));
+    }
+    return true;
+  }, 100, 1);
+
+  expect(consumerList.length).toBe(10);
+  expect(singleConsumer).not.toBe(undefined);
 
   await new Promise(r => setTimeout(r, 5 * 1000));
 
-  await rabbitEnhancer.killConsumer('test-enhancer-amqp-connect-0-channel-0-consumer-0');
+  await rabbitEnhancer.killConsumer(singleConsumer.consumerName);
 
   for (let i = 0; i < 1200; i++) {
     new Promise(() => {

@@ -113,11 +113,12 @@ export class RabbitEnhancer {
       agentCheckIdleTime: agentCheckIdleTime,
     };
     if (!this.agentInstance) {
-      this.dynamicOverHead(0, dynamicConsumer, this.getNextChannel(), 1, 0).catch(err => err);
-      this.dynamicAgent();
-      this.agentInstance = setInterval(() => this.dynamicAgent(), agentCheckIdleTime);
+      this.dynamicOverHead(0, dynamicConsumer, this.getNextChannel(), 1, 0).then(() => {
+        this.dynamicConsumerPool.push(dynamicConsumer);
+        this.dynamicAgent();
+        this.agentInstance = setInterval(() => this.dynamicAgent(), agentCheckIdleTime);
+      });
     }
-    this.dynamicConsumerPool.push(dynamicConsumer);
   }
 
   public async killConsumer(name: string): Promise<void> {
@@ -134,8 +135,7 @@ export class RabbitEnhancer {
     const currentDynamicConsumer = this.dynamicConsumerPool.find(element => element.targetQueue === targetQueue);
     if (currentDynamicConsumer) {
       this.dynamicConsumerPool = this.dynamicConsumerPool.filter(element => element.targetQueue != targetQueue);
-      await Promise.all(
-        currentDynamicConsumer.consumerPool.map(consumer => consumer.kill()));
+      await Promise.all(currentDynamicConsumer.consumerPool.map(consumer => consumer.kill()));
       if (this.dynamicConsumerPool.length === 0) {
         clearInterval(this.agentInstance);
       }

@@ -102,7 +102,7 @@ export class RabbitEnhancer {
     pressureCount = 25,
     agentCheckIdleTime = 10000,
   ): void {
-    this.dynamicConsumerPool.push({
+    const dynamicConsumer = {
       targetQueue: queue,
       consumerPool: [],
       maxConsumer: maxConsumerCount,
@@ -111,11 +111,13 @@ export class RabbitEnhancer {
       preAddConsumerCount: preAddConsumerCount,
       pressureCount: pressureCount,
       agentCheckIdleTime: agentCheckIdleTime,
-    });
+    };
     if (!this.agentInstance) {
+      this.dynamicOverHead(0, dynamicConsumer, this.getNextChannel(), 1, 0).catch(err => err);
       this.dynamicAgent();
       this.agentInstance = setInterval(() => this.dynamicAgent(), agentCheckIdleTime);
     }
+    this.dynamicConsumerPool.push(dynamicConsumer);
   }
 
   public async killConsumer(name: string): Promise<void> {

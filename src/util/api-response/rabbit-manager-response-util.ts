@@ -1,5 +1,4 @@
 import { Logger } from 'log4js';
-import { HeaderInfo } from 'node-libcurl';
 import { ApiResponseUtilInterface } from '../../interface/api-response-util-interface';
 
 export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
@@ -12,9 +11,9 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
     this.logger = logger;
   }
 
-  analDelete(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any {
+  analDelete(url: string, params: {} | undefined, headers: any, code: number, data: any, rsHeader: any): any {
     if (this.verbose) {
-      this.printVerbose(url, params, header, code, data, rsHeader);
+      this.printVerbose(url, params, headers, code, data, rsHeader);
     }
     // anal
     switch (code) {
@@ -34,9 +33,9 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
     }
   }
 
-  public analGet(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any {
+  public analGet(url: string, params: {} | undefined, headers: any, code: number, data: any, rsHeader: any): any {
     if (this.verbose) {
-      this.printVerbose(url, params, header, code, data, rsHeader);
+      this.printVerbose(url, params, headers, code, data, rsHeader);
     }
     // anal
     switch (code) {
@@ -55,16 +54,16 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
     }
   }
 
-  analPost(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any {
+  analPost(url: string, params: {} | undefined, headers: any, code: number, data: any, rsHeader: any): any {
     if (this.verbose) {
-      this.printVerbose(url, params, header, code, data, rsHeader);
+      this.printVerbose(url, params, headers, code, data, rsHeader);
     }
     return Promise.resolve(undefined);
   }
 
-  analPut(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any {
+  analPut(url: string, params: {} | undefined, headers: any, code: number, data: any, rsHeader: any): any {
     if (this.verbose) {
-      this.printVerbose(url, params, header, code, data, rsHeader);
+      this.printVerbose(url, params, headers, code, data, rsHeader);
     }
     //anal
     switch (code) {
@@ -84,10 +83,10 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
     }
   }
 
-  private printVerbose(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]) {
+  private printVerbose(url: string, params: {} | undefined, headers: any, code: number, data: any, rsHeader: any) {
     this.logger.info(
       `Requested Url: ${ url }
-        header: ${ header || '' }
+        headers: ${ JSON.stringify(headers) || '' }
         Params: ${ params || '' }
         Response Code: ${ code }
         Header: ${ rsHeader ? JSON.stringify(rsHeader) : '' }

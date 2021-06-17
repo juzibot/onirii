@@ -1,52 +1,64 @@
-import { curly, HeaderInfo } from 'node-libcurl';
-import { CurlyOptions } from 'node-libcurl/dist/curly';
-import * as querystring from 'querystring';
+import axios, { AxiosRequestConfig } from 'axios';
 import { ApiResponseUtilInterface } from '../interface/api-response-util-interface';
 
 export class ApiRequestUtil {
 
   private readonly responseAnalyzer: ApiResponseUtilInterface;
 
-  constructor(responseAnalyzer: ApiResponseUtilInterface) {
+  constructor(responseAnalyzer: ApiResponseUtilInterface, auth: any) {
     this.responseAnalyzer = responseAnalyzer;
+    axios.defaults.headers = auth;
   }
 
-  private static createBody(jsonStringify: boolean | undefined, params?: {}, header?: string[])
-    : CurlyOptions {
-    const options: CurlyOptions = {};
-    if (params) {
-      options.postFields = jsonStringify ? JSON.stringify(params) : querystring.stringify(params);
+  private static createBody(data?: any, headers?: any): AxiosRequestConfig {
+    const options: AxiosRequestConfig = {};
+    if (data) {
+      options.data = data;
     }
-    if (header) {
-      options.httpHeader = header;
+    if (headers) {
+      options.headers = headers;
     }
     return options;
   }
 
-  public async getRequest(url: string, params?: {}, header?: string[]): Promise<any> {
-    const { statusCode, data, headers }
-      = await curly.get(this.createParams(url, params), ApiRequestUtil.createBody(false, undefined, header));
-    return this.responseAnalyzer.analGet(url, params, header, statusCode, data, headers);
+  public async getRequest(url: string, params?: {}, headers?: any): Promise<any> {
+    let requestRs: { status: number, data: any, headers: any };
+    try {
+      requestRs = await axios.get(this.createParams(url, params), ApiRequestUtil.createBody(undefined, headers));
+    } catch (err) {
+      requestRs = err.response;
+    }
+    return this.responseAnalyzer.analGet(url, params, headers, requestRs.status, requestRs.data, requestRs.headers);
   }
 
-  public async postRequest(url: string, jsonStringify?: boolean, params?: {}, header?: string[])
-    : Promise<any> {
-    const { statusCode, data, headers }
-      = await curly.post(url, ApiRequestUtil.createBody(jsonStringify, params, header));
-    return this.responseAnalyzer.analPost(url, params, header, statusCode, data, headers);
+  public async postRequest(url: string, params?: {}, headers?: any): Promise<any> {
+    let requestRs: { status: number, data: any, headers: any };
+    try {
+      requestRs = await axios.post(url, ApiRequestUtil.createBody(params, headers));
+    } catch (err) {
+      requestRs = err.response;
+    }
+    return this.responseAnalyzer.analPost(url, params, headers, requestRs.status, requestRs.data, requestRs.headers);
   }
 
-  public async putRequest(url: string, jsonStringify?: boolean, params?: {}, header?: string[])
-    : Promise<any> {
-    const { statusCode, data, headers }
-      = await curly.put(url, ApiRequestUtil.createBody(jsonStringify, params, header));
-    return this.responseAnalyzer.analPut(url, params, header, statusCode, data, headers);
+  public async putRequest(url: string, params?: {}, headers?: any): Promise<any> {
+    let requestRs: { status: number, data: any, headers: any };
+    try {
+      requestRs = await axios.put(url, ApiRequestUtil.createBody(params, headers));
+    } catch (err) {
+      requestRs = err.response;
+    }
+    return this.responseAnalyzer.analPut(url, params, headers, requestRs.status, requestRs.data, requestRs.headers);
   }
 
-  public async deleteRequest(url: string, params?: {}, header?: string[]): Promise<any> {
-    const { statusCode, data, headers }
-      = await curly.delete(this.createParams(url, params), ApiRequestUtil.createBody(false, undefined, header));
-    return this.responseAnalyzer.analDelete(url, params, header, statusCode, data, headers);
+  public async deleteRequest(url: string, params?: {}, headers?: any): Promise<any> {
+    let requestRs: { status: number, data: any, headers: any };
+    try {
+      requestRs = await axios.delete(this.createParams(url, params), ApiRequestUtil.createBody(undefined, headers));
+    } catch (err) {
+      requestRs = err.response;
+    }
+    return this.responseAnalyzer.analDelete(url, params, headers, requestRs.status, requestRs.data, requestRs.headers);
   }
 
   private createParams(url: string, params: any) {
@@ -62,12 +74,3 @@ export class ApiRequestUtil {
   }
 
 }
-
-export type Analyzer = (
-  url: string,
-  params: {} | undefined,
-  header: string[] | undefined,
-  code: number,
-  data: any,
-  rsHeader: HeaderInfo[],
-) => Promise<any>;

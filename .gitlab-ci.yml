@@ -12,6 +12,7 @@ test:
   only:
     - master
     - /^release-.*$/
+    - /^test-.*$/
   tags:
     - build
   script:

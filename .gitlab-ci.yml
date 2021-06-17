@@ -12,13 +12,12 @@ test:
   only:
     - master
     - /^release-.*$/
+    - /^test-.*$/
   tags:
     - build
   script:
     - export https_proxy=http://40.83.115.224:30000/
-    - npm config set registry https://registry.npmjs.org/
     - yarn install
-    - npm config set registry https://nexus.heavenark.com/repository/npm-public/
     - export https_proxy=
     - npm run test
 
@@ -47,9 +46,9 @@ publish:
     - build
   script:
     - export https_proxy=http://40.83.115.224:30000/
-    - npm config set registry https://registry.npmjs.org/
     - yarn install
     - export https_proxy=
+    - npm config set registry https://registry.npmjs.org/
     - npm run deploy
     - npm config set registry https://nexus.heavenark.com/repository/npm-private/
     - npm run deploy

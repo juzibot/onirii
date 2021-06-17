@@ -20,8 +20,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   private readonly logger: Logger;
   // manager api
   private readonly managerApi: string | undefined;
-  // manager api basic auth
-  private readonly managerAuth: string;
   // manger service identify name
   private readonly instanceName: string;
   // current manager api requester (include response analyzer)
@@ -37,7 +35,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   constructor(name: string, managerApi?: string, auth?: string) {
     this.instanceName = name;
     this.logger = LogFactory.create(`${ this.instanceName }-manager-service`);
-    this.apiRequester = new ApiRequestUtil(new RabbitManagerResponseUtil(this.logger));
     this.managerApi = managerApi;
     if (!this.managerApi) {
       this.managerApi = EnvLoaderUtil.getInstance().getPublicConfig().managerApiUrl;
@@ -49,7 +46,9 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
     if (!this.managerApi || !currentAuth) {
       throw new Error('Must Specific Manager ApiUrl And Auth, You Can Defined At Env Or Params');
     }
-    this.managerAuth = `Authorization: Basic ${ Buffer.from(currentAuth).toString('base64') }`;
+    this.apiRequester = new ApiRequestUtil(new RabbitManagerResponseUtil(this.logger), {
+      'Authorization': `Basic ${ Buffer.from(currentAuth).toString('base64') }`,
+    });
   }
 
   /**
@@ -69,8 +68,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   async checkAlarms(): Promise<any> {
     return this.apiRequester.getRequest(
       `${ this.managerApi }/health/checks/alarms`,
-      undefined,
-      [this.managerAuth],
     );
   }
 
@@ -84,8 +81,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   async checkCertificate(leftTime: number, unit: 'days' | 'weeks' | 'months' | 'years'): Promise<any> {
     return this.apiRequester.getRequest(
       `${ this.managerApi }/health/checks/certificate-expiration/${ leftTime }/${ unit }`,
-      undefined,
-      [this.managerAuth],
     );
   }
 
@@ -97,8 +92,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   async checkLocalAlarms(): Promise<any> {
     return this.apiRequester.getRequest(
       `${ this.managerApi }/health/checks/local-alarms`,
-      undefined,
-      [this.managerAuth],
     );
   }
 
@@ -110,8 +103,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   async checkNodeMirrorSyncCritical(): Promise<RMHealth.HealthCheckBaseRs | boolean> {
     return this.apiRequester.getRequest(
       `${ this.managerApi }/health/checks/node-is-mirror-sync-critical`,
-      undefined,
-      [this.managerAuth],
     );
   }
 
@@ -123,8 +114,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   async checkNodeQuorumCritical(): Promise<RMHealth.HealthCheckBaseRs> {
     return this.apiRequester.getRequest(
       `${ this.managerApi }/health/checks/node-is-quorum-critical`,
-      undefined,
-      [this.managerAuth],
     );
   }
 
@@ -137,8 +126,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   async checkPortHealth(port: number): Promise<RMHealth.HealthCheckPortRs | boolean> {
     return this.apiRequester.getRequest(
       `${ this.managerApi }/health/checks/port-listener/${ port }`,
-      undefined,
-      [this.managerAuth],
     );
   }
 
@@ -151,8 +138,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   public async checkProtocol(name: 'amqp091' | 'amqp10' | 'mqtt' | 'stomp' | 'web-mqtt' | 'web-stomp'): Promise<RMHealth.HealthCheckProtocolRs | boolean> {
     return this.apiRequester.getRequest(
       `${ this.managerApi }/health/checks/protocol-listener/${ name }`,
-      undefined,
-      [this.managerAuth],
     );
   }
 
@@ -164,8 +149,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   checkVirtualHosts(): Promise<any> {
     return this.apiRequester.getRequest(
       `${ this.managerApi }/health/checks/virtual-hosts`,
-      undefined,
-      [this.managerAuth],
     );
   }
 
@@ -179,9 +162,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   async createVhost(name: string, params?: RMVhost.CreateVhostParams): Promise<boolean> {
     const rs = await this.apiRequester.putRequest(
       `${ this.managerApi }/vhosts/${ name }`,
-      true,
       params,
-      [this.managerAuth],
     );
     if (!rs) {
       this.logger.warn(`Target VHost Already Exist:${ name }`);
@@ -203,7 +184,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
     const rs = await this.apiRequester.deleteRequest(
       `${ this.managerApi }/vhosts/${ name }`,
       params,
-      [this.managerAuth],
     );
     if (checkImmediately) {
       return await this.getVhost(name) === false;
@@ -222,8 +202,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
     const currentName = name ? `/${ name }` : '';
     return this.apiRequester.getRequest(
       `${ this.managerApi }/vhosts${ currentName }`,
-      undefined,
-      [this.managerAuth],
     );
   }
 
@@ -236,8 +214,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   async getVhostConnection(name: string): Promise<RMConnect.VhostConnectionsStatus[] | boolean> {
     return this.apiRequester.getRequest(
       `${ this.managerApi }/vhosts/${ name }/connections`,
-      undefined,
-      [this.managerAuth],
     );
   }
 
@@ -252,7 +228,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
     return this.apiRequester.getRequest(
       `${ this.managerApi }/vhosts/${ name }/channels`,
       options,
-      [this.managerAuth],
     );
   }
 
@@ -265,9 +240,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   async startNode(vhostName: string, nodeName: string): Promise<any> {
     return this.apiRequester.postRequest(
       `${ this.managerApi }/vhosts/${ vhostName }/start/${ nodeName }`,
-      true,
-      undefined,
-      [this.managerAuth],
     );
   }
 
@@ -282,9 +254,7 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
   public async createExchange(vhost: string, name: string, options: RMExchange.CreateOptions): Promise<boolean> {
     return this.apiRequester.putRequest(
       `${ this.managerApi }/exchanges/${ vhost }/${ name }`,
-      true,
       options,
-      [this.managerAuth],
     );
   }
 
@@ -308,7 +278,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
     const rs = await this.apiRequester.deleteRequest(
       `${ this.managerApi }/exchanges/${ vhost }/${ name }`,
       options,
-      [this.managerAuth],
     );
     if (checkImmediately) {
       return await this.getExchange(vhost, name) === false;
@@ -333,8 +302,6 @@ export class RabbitManagerService implements RabbitManagerHealthInterface, Rabbi
     const currentName = name ? `/${ name }` : '';
     return this.apiRequester.getRequest(
       `${ this.managerApi }/exchanges${ currentVhost }${ currentName }`,
-      undefined,
-      [this.managerAuth],
     );
   }
 

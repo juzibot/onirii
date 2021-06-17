@@ -1,5 +1,3 @@
-import { HeaderInfo } from 'node-libcurl';
-
 /**
  * ApiRequest Util Response Analysis Interface
  *
@@ -14,24 +12,24 @@ export interface ApiResponseUtilInterface {
    *
    * @return {<void>}
    */
-  analGet(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any;
+  analGet(url: string, params: {} | undefined, headers: any | undefined, code: number, data: any, rsHeader?: any): any;
 
   /**
    * analysis api post response
    * @return {<void>}
    */
-  analPost(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any;
+  analPost(url: string, params: {} | undefined, headers: any | undefined, code: number, data: any, rsHeader: any): any;
 
   /**
    * analysis api put response
    * @return {<void>}
    */
-  analPut(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any;
+  analPut(url: string, params: {} | undefined, headers: any | undefined, code: number, data: any, rsHeader: any): any;
 
   /**
    * analysis api delete response
    * @return {<void>}
    */
-  analDelete(url: string, params: {} | undefined, header: string[] | undefined, code: number, data: any, rsHeader: HeaderInfo[]): any;
+  analDelete(url: string, params: {} | undefined, headers: any | undefined, code: number, data: any, rsHeader: any): any;
 
 }

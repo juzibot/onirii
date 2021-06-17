@@ -24,6 +24,10 @@ export class RabbitEnhancer {
 
   private channelPoint = 0;
 
+  private dynamicConsumerPool: DynamicConsumer[] = [];
+
+  private agentInstance: any;
+
   constructor(name: string, protocol: 'amqp091' | 'http', configure: RabbitEnhancerConfigure) {
     if (protocol === 'http') {
       throw new Error('Not Complete Supported Yet You Can Try It With createRabbitManagerService()');
@@ -73,7 +77,7 @@ export class RabbitEnhancer {
   public async addConsumer(
     queue: string, processor: EnhancerConsumerProcessor, delay?: number, replica = 1, options?: Options.Get,
   ): Promise<AmqpEnhancerConsumerWrapper | AmqpEnhancerConsumerWrapper[]> {
-    const consumerPool = []
+    const consumerPool = [];
     for (let i = 0; i < replica; i++) {
       const consumer = this.getNextChannel().enhancerConsume(queue, processor, delay, undefined, options);
       if (consumer) {
@@ -89,6 +93,31 @@ export class RabbitEnhancer {
     return consumerPool;
   }
 
+  public addDynamicConsumer(
+    queue: string,
+    processor: EnhancerConsumerProcessor,
+    options?: Options.Get,
+    maxConsumerCount = 50,
+    preAddConsumerCount = 5,
+    pressureCount = 25,
+    agentCheckIdleTime = 10000,
+  ): void {
+    this.dynamicConsumerPool.push({
+      targetQueue: queue,
+      consumerPool: [],
+      maxConsumer: maxConsumerCount,
+      options: options,
+      processor,
+      preAddConsumerCount: preAddConsumerCount,
+      pressureCount: pressureCount,
+      agentCheckIdleTime: agentCheckIdleTime,
+    });
+    if (!this.agentInstance) {
+      this.dynamicAgent();
+      this.agentInstance = setInterval(() => this.dynamicAgent(), agentCheckIdleTime);
+    }
+  }
+
   public async killConsumer(name: string): Promise<void> {
     const currentConsumer = this.consumerPool.find(element => element.consumerName === name);
     if (currentConsumer) {
@@ -99,6 +128,17 @@ export class RabbitEnhancer {
     throw new Error(`Can't kill unknown consumer ${ name }`);
   }
 
+  public async killDynamicConsumer(targetQueue: string) {
+    const currentDynamicConsumer = this.dynamicConsumerPool.find(element => element.targetQueue === targetQueue);
+    if (currentDynamicConsumer) {
+      this.dynamicConsumerPool = this.dynamicConsumerPool.filter(element => element.targetQueue != targetQueue);
+      await Promise.all(
+        currentDynamicConsumer.consumerPool.map(consumer => consumer.kill()));
+      return;
+    }
+    throw new Error(`Can't kill unknown target queue(${ targetQueue }) dynamic consumer`);
+  }
+
   public async pushOperation(processor: (currentChannel: AmqpChannelService) => Promise<any>): Promise<any> {
     return processor(this.getNextChannel());
   }
@@ -107,6 +147,9 @@ export class RabbitEnhancer {
     await Promise.all(this.connectionPool.map(element => element.close()));
   }
 
+  public getDynamicConsumerData(targetQueue: string) {
+    return this.dynamicConsumerPool.find(element => element.targetQueue = targetQueue);
+  }
 
   private async initExchange(): Promise<void> {
     const exchangeInitData = this.configure.resourceConfigure!.exchangeList;
@@ -180,6 +223,57 @@ export class RabbitEnhancer {
     return currentChannel;
   }
 
+  private dynamicAgent() {
+    this.dynamicConsumerPool.forEach(async element => {
+      const currentChannel = this.getNextChannel();
+      const waitingMessageCount = (await currentChannel.getQueueStatus(element.targetQueue)).messageCount;
+      let pressure = Math.ceil(waitingMessageCount / element.pressureCount);
+      const existConsumerCount = element.consumerPool.length;
+      currentChannel.logger.debug(
+        `DynamicAgent Processing Queue: ${ element.targetQueue }`,
+        `messageCount:${ waitingMessageCount } consumerCount:${ existConsumerCount }`,
+      );
+      // check exist consumer over head
+      if (pressure > 1) {
+        await this.dynamicOverHead(existConsumerCount, element, currentChannel, pressure, waitingMessageCount);
+      } else if (pressure === 0 && element.consumerPool.length > 1) {
+        await RabbitEnhancer.dynamicKill(element);
+      }
+    });
+  }
+
+  private async dynamicOverHead(
+    existConsumerCount: number,
+    element: DynamicConsumer,
+    currentChannel: AmqpChannelService,
+    needCreateCount: number,
+    waitingMessageCount: number,
+  ) {
+    //check already full consumer count
+    if (existConsumerCount >= element.maxConsumer) {
+      currentChannel.logger.warn(
+        `Dynamic Agent Got Already MaxConsumer${ element.maxConsumer } Count Created`,
+        `But Message Stall Over PressureCount(${ element.pressureCount }) Current(${ waitingMessageCount })`,
+      );
+      return;
+    }
+    needCreateCount = Math.min(needCreateCount, element.preAddConsumerCount);
+    // check over head and confirm new consumer count
+    if (element.maxConsumer < existConsumerCount + needCreateCount) {
+      needCreateCount = element.maxConsumer - existConsumerCount;
+    }
+    // create new consumer
+    const newConsumer = await this.addConsumer(element.targetQueue, element.processor, 100, needCreateCount, element.options);
+    element.consumerPool = element.consumerPool.concat(newConsumer);
+  }
+
+  private static async dynamicKill(element: DynamicConsumer) {
+    const lastConsumer = element.consumerPool.shift();
+    if (lastConsumer) {
+      await lastConsumer.kill();
+    }
+  }
+
 }
 
 export interface RabbitEnhancerConfigure {
@@ -210,4 +304,15 @@ export interface RabbitEnhancerBind {
   targetSourceName: string,
   key: string,
   options?: any
+}
+
+export interface DynamicConsumer {
+  targetQueue: string,
+  consumerPool: AmqpEnhancerConsumerWrapper[],
+  processor: EnhancerConsumerProcessor,
+  options?: Options.Get,
+  pressureCount: number,
+  preAddConsumerCount: number;
+  maxConsumer: number,
+  agentCheckIdleTime: number
 }

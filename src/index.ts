@@ -4,15 +4,15 @@ import { RabbitManagerService } from './service/rabbit/rabbit-manager-service';
 
 export default class Onirii {
 
-  public createAmqpConnect(name: string, amqpUrl?: string) {
+  public static createAmqpConnect(name: string, amqpUrl?: string) {
     return new AmqpConnectService(name, 0, amqpUrl);
   }
 
-  public createRabbitManagerService(name: string, managerApi?: string, auth?: string) {
+  public static createRabbitManagerService(name: string, managerApi?: string, auth?: string) {
     return new RabbitManagerService(name, managerApi, auth);
   }
 
-  public createRabbitEnhancer(name: string, protocol: 'amqp091' | 'http', configure: RabbitEnhancerConfigure) {
+  public static createRabbitEnhancer(name: string, protocol: 'amqp091' | 'http', configure: RabbitEnhancerConfigure) {
     return new RabbitEnhancer(name, protocol, configure);
   }
 }

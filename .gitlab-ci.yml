@@ -1,6 +1,6 @@
 variables:
   PROJECT_NAME: "Onirii"
-  VERSION: "1.1.0"
+  VERSION: "1.2.0"
 
 stages:
   - test
@@ -16,9 +16,7 @@ test:
   tags:
     - build
   script:
-    - export https_proxy=http://40.83.115.224:30000/
     - yarn install
-    - export https_proxy=
     - npm run test
 
 sonar:
@@ -45,9 +43,7 @@ publish:
   tags:
     - build
   script:
-    - export https_proxy=http://40.83.115.224:30000/
     - yarn install
-    - export https_proxy=
     - npm config set registry https://registry.npmjs.org/
     - npm run deploy
     - npm config set registry https://nexus.heavenark.com/repository/npm-private/

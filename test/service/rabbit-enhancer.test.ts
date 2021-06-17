@@ -29,6 +29,35 @@ const rabbitEnhancer = new RabbitEnhancer('test-enhancer', 'amqp091', {
   },
 });
 
+const rabbitEnhancer2 = new RabbitEnhancer('test-enhancer', 'amqp091', {
+  openConnectionCount: 2,
+  openChannelType: 'normal',
+  openChannelCount: 8,
+  resourceConfigure: {
+    queueList: [
+      {
+        name: 'EnhancerTestQueue',
+      }, {
+        name: 'testQueue2',
+      },
+    ],
+    exchangeList: [
+      {
+        name: 'EnhancerTestExchange',
+        type: 'direct',
+      },
+    ],
+    bindList: [
+      {
+        type: 'qte',
+        fromSourceName: 'EnhancerTestExchange',
+        targetSourceName: 'EnhancerTestQueue',
+        key: 'testKey',
+      },
+    ],
+  },
+});
+
 const testQueue = 'rabbit-enhancer-test-queue';
 
 const testQueue2 = 'rabbit-enhancer-test-queue2';
@@ -74,14 +103,16 @@ test('rabbit-enhancer-test', async () => {
 
   await new Promise(r => setTimeout(r, 30 * 1000));
 
+  await rabbitEnhancer.close();
+
 });
 
 test('rabbit-enhancer-dynamic-test', async () => {
 
-  await rabbitEnhancer.ready();
-  await rabbitEnhancer.pushOperation(async channel => channel.createQueueIfNotExist(testQueue));
+  await rabbitEnhancer2.ready();
+  await rabbitEnhancer2.pushOperation(async channel => channel.createQueueIfNotExist(testQueue));
 
-  rabbitEnhancer.addDynamicConsumer(testQueue, async msg => {
+  rabbitEnhancer2.addDynamicConsumer(testQueue, async msg => {
     if (msg) {
       return true;
     }
@@ -89,27 +120,25 @@ test('rabbit-enhancer-dynamic-test', async () => {
   }, undefined, 10, 2, 100, 5 * 1000);
 
   for (let i = 0; i < 1000; i++) {
-    rabbitEnhancer.pushOperation(async channel => {
+    rabbitEnhancer2.pushOperation(async channel => {
       await channel.sendMessageToQueue(testQueue, Buffer.from('testData'));
     }).catch(err => err);
   }
 
   await new Promise(r => setTimeout(r, 5 * 1000));
 
-  expect(rabbitEnhancer.getDynamicConsumerData(testQueue)?.consumerPool.length).not.toBe(1);
+  expect(rabbitEnhancer2.getDynamicConsumerData(testQueue)?.consumerPool.length).not.toBe(1);
 
   // wait kill all useless consumer(add extra 20s time)
   await new Promise(r => setTimeout(r, (5 + 2) * 10 * 1000));
 
-  expect(rabbitEnhancer.getDynamicConsumerData(testQueue)?.consumerPool.length).toBe(1);
+  expect(rabbitEnhancer2.getDynamicConsumerData(testQueue)?.consumerPool.length).toBe(1);
 
-  await rabbitEnhancer.killDynamicConsumer(testQueue);
+  await rabbitEnhancer2.killDynamicConsumer(testQueue);
 
-  expect(rabbitEnhancer.getDynamicConsumerData(testQueue)).toBe(undefined);
+  expect(rabbitEnhancer2.getDynamicConsumerData(testQueue)).toBe(undefined);
 
-  await rabbitEnhancer.close();
-
+  await rabbitEnhancer2.close();
 });
-
 
 jest.setTimeout(60 * 60 * 1000);

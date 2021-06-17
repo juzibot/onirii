@@ -134,6 +134,9 @@ export class RabbitEnhancer {
       this.dynamicConsumerPool = this.dynamicConsumerPool.filter(element => element.targetQueue != targetQueue);
       await Promise.all(
         currentDynamicConsumer.consumerPool.map(consumer => consumer.kill()));
+      if (this.dynamicConsumerPool.length === 0) {
+        clearInterval(this.agentInstance);
+      }
       return;
     }
     throw new Error(`Can't kill unknown target queue(${ targetQueue }) dynamic consumer`);
@@ -144,6 +147,7 @@ export class RabbitEnhancer {
   }
 
   public async close(): Promise<void> {
+    await Promise.all(this.dynamicConsumerPool.map(element => this.killDynamicConsumer(element.targetQueue)));
     await Promise.all(this.connectionPool.map(element => element.close()));
   }
 

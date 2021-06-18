@@ -235,10 +235,12 @@ export class RabbitEnhancer {
       const waitingMessageCount = (await currentChannel.getQueueStatus(element.targetQueue)).messageCount;
       let pressure = Math.ceil(waitingMessageCount / element.pressureCount);
       const existConsumerCount = element.consumerPool.length;
-      currentChannel.logger.debug(
-        `DynamicAgent Processing Queue: ${ element.targetQueue }`,
-        `messageCount:${ waitingMessageCount } consumerCount:${ existConsumerCount }`,
-      );
+      if (process.env.VERBOSE && (process.env.VERBOSE as unknown as boolean)) {
+        currentChannel.logger.debug(
+          `DynamicAgent Processing Queue: ${ element.targetQueue }`,
+          `messageCount:${ waitingMessageCount } consumerCount:${ existConsumerCount }`,
+        );
+      }
       // check exist consumer over head
       if (pressure > 1) {
         await this.dynamicOverHead(existConsumerCount, element, currentChannel, pressure, waitingMessageCount);

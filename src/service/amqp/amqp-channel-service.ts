@@ -27,7 +27,7 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   // original enhancer consumer pool
   private enhancerConsumerPool: AmqpEnhancerConsumerWrapper[] = [];
   // consumer position
-  private consumerPosition: number = -1;
+  private consumerPosition = -1;
 
   /**
    * Constructor this need inject current amqp channel instance to create
@@ -77,7 +77,7 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
    * @return {Promise<AmqpEnhancerConsumerWrapper>}
    */
   public enhancerConsume(
-    queue: string, processor: EnhancerConsumerProcessor, delay: number = 0, consumeName?: string, options?: Options.Get,
+    queue: string, processor: EnhancerConsumerProcessor, delay = 0, consumeName?: string, options?: Options.Get,
   ): AmqpEnhancerConsumerWrapper {
     const consumerName: string = consumeName || this.getNextConsumerName();
     const enhancerConsumer = new AmqpEnhancerConsumerWrapper(consumerName, this, queue, processor, delay, options);

@@ -21,7 +21,7 @@ export class ApiRequestUtil {
     return options;
   }
 
-  public async getRequest(url: string, params?: {}, headers?: any): Promise<any> {
+  public async getRequest(url: string, params?: any, headers?: any): Promise<any> {
     let requestRs: { status: number, data: any, headers: any };
     try {
       requestRs = await axios.get(this.createParams(url, params), ApiRequestUtil.createBody(undefined, headers));
@@ -31,7 +31,7 @@ export class ApiRequestUtil {
     return this.responseAnalyzer.analGet(url, params, headers, requestRs.status, requestRs.data, requestRs.headers);
   }
 
-  public async postRequest(url: string, params?: {}, headers?: any): Promise<any> {
+  public async postRequest(url: string, params?: any, headers?: any): Promise<any> {
     let requestRs: { status: number, data: any, headers: any };
     try {
       requestRs = await axios.post(url, ApiRequestUtil.createBody(params, headers));
@@ -41,7 +41,7 @@ export class ApiRequestUtil {
     return this.responseAnalyzer.analPost(url, params, headers, requestRs.status, requestRs.data, requestRs.headers);
   }
 
-  public async putRequest(url: string, params?: {}, headers?: any): Promise<any> {
+  public async putRequest(url: string, params?: any, headers?: any): Promise<any> {
     let requestRs: { status: number, data: any, headers: any };
     try {
       requestRs = await axios.put(url, ApiRequestUtil.createBody(params, headers));
@@ -51,7 +51,7 @@ export class ApiRequestUtil {
     return this.responseAnalyzer.analPut(url, params, headers, requestRs.status, requestRs.data, requestRs.headers);
   }
 
-  public async deleteRequest(url: string, params?: {}, headers?: any): Promise<any> {
+  public async deleteRequest(url: string, params?: any, headers?: any): Promise<any> {
     let requestRs: { status: number, data: any, headers: any };
     try {
       requestRs = await axios.delete(this.createParams(url, params), ApiRequestUtil.createBody(undefined, headers));
@@ -61,7 +61,7 @@ export class ApiRequestUtil {
     return this.responseAnalyzer.analDelete(url, params, headers, requestRs.status, requestRs.data, requestRs.headers);
   }
 
-  private createParams(url: string, params: any) {
+  private createParams(url: string, params: { [key: string]: string | boolean | number }) {
     if (!params) {
       return url;
     }

@@ -37,7 +37,7 @@ export class RabbitEnhancer {
     this.configure = configure;
   }
 
-  public async ready() {
+  public async ready(): Promise<void> {
     // create connection
     for (let i = 0; i < this.configure.openConnectionCount; i++) {
       const connectInstance = new AmqpConnectService(`${ this.instanceName }`, i);
@@ -131,7 +131,7 @@ export class RabbitEnhancer {
     throw new Error(`Can't kill unknown consumer ${ name }`);
   }
 
-  public async killDynamicConsumer(targetQueue: string) {
+  public async killDynamicConsumer(targetQueue: string):Promise<void> {
     const currentDynamicConsumer = this.dynamicConsumerPool.find(element => element.targetQueue === targetQueue);
     if (currentDynamicConsumer) {
       this.dynamicConsumerPool = this.dynamicConsumerPool.filter(element => element.targetQueue != targetQueue);
@@ -153,16 +153,16 @@ export class RabbitEnhancer {
     await Promise.all(this.connectionPool.map(element => element.close()));
   }
 
-  public getDynamicConsumerData(targetQueue: string) {
+  public getDynamicConsumerData(targetQueue: string):DynamicConsumer | undefined {
     return this.dynamicConsumerPool.find(element => element.targetQueue = targetQueue);
   }
 
   private async initExchange(): Promise<void> {
-    const exchangeInitData = this.configure.resourceConfigure!.exchangeList;
+    const exchangeInitData = this.configure.resourceConfigure?.exchangeList;
     if (!exchangeInitData) {
       return;
     }
-    for (let exchangeInitDatum of exchangeInitData) {
+    for (const exchangeInitDatum of exchangeInitData) {
       if (this.enhancerProtocol === 'amqp091') {
         await this.getNextChannel()
           .createExchangeIfNotExist(exchangeInitDatum.name, exchangeInitDatum.type, exchangeInitDatum.options);
@@ -172,11 +172,11 @@ export class RabbitEnhancer {
   }
 
   private async initQueue(): Promise<void> {
-    const queueInitData = this.configure.resourceConfigure!.queueList;
+    const queueInitData = this.configure.resourceConfigure?.queueList;
     if (!queueInitData) {
       return;
     }
-    for (let queueInitDatum of queueInitData) {
+    for (const queueInitDatum of queueInitData) {
       if (this.enhancerProtocol === 'amqp091') {
         await this.getNextChannel().createQueueIfNotExist(queueInitDatum.name, queueInitDatum.options);
       }
@@ -233,7 +233,7 @@ export class RabbitEnhancer {
     this.dynamicConsumerPool.forEach(async element => {
       const currentChannel = this.getNextChannel();
       const waitingMessageCount = (await currentChannel.getQueueStatus(element.targetQueue)).messageCount;
-      let pressure = Math.ceil(waitingMessageCount / element.pressureCount);
+      const pressure = Math.ceil(waitingMessageCount / element.pressureCount);
       const existConsumerCount = element.consumerPool.length;
       if (process.env.VERBOSE && (process.env.VERBOSE as unknown as boolean)) {
         currentChannel.logger.debug(

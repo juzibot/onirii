@@ -40,7 +40,7 @@ export class AmqpEnhancerConsumerWrapper {
     parentService: AmqpChannelService,
     queue: string,
     processor: EnhancerConsumerProcessor,
-    delay: number = 10,
+    delay = 10,
     options?: Options.Get,
   ) {
     this.consumerName = consumerName;

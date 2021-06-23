@@ -1,20 +1,20 @@
 ###
-GET http://106.13.64.53:10000/api/exchanges
+GET http://106.13.64.53:9999/api/exchanges
 Accept: application/json
 Authorization: Basic test testtset123+
 
 ###
-GET http://106.13.64.53:10000/api/exchanges/%2F
+GET http://106.13.64.53:9999/api/exchanges/%2F
 Accept: application/json
 Authorization: Basic test testtset123+
 
 ###
-GET http://106.13.64.53:10000/api/exchanges/%2F/testExchange10
+GET http://106.13.64.53:9999/api/exchanges/%2F/testExchange10
 Accept: application/json
 Authorization: Basic test testtset123+
 
 ###
-PUT http://106.13.64.53:10000/api/exchanges/%2F/testExchange
+PUT http://106.13.64.53:9999/api/exchanges/%2F/testExchange
 Accept: application/json
 Authorization: Basic test testtset123+
 
@@ -24,12 +24,12 @@ Authorization: Basic test testtset123+
 }
 
 ###
-DELETE http://106.13.64.53:10000/api/exchanges/%2F/testExchange?if-unused=true
+DELETE http://106.13.64.53:9999/api/exchanges/%2F/testExchange?if-unused=true
 Accept: application/json
 Authorization: Basic test testtset123+
 
 ###
-GET http://106.13.64.53:10000/api/exchanges/%2F/testExchange/bindings/source
+GET http://106.13.64.53:9999/api/exchanges/%2F/testExchange/bindings/source
 Accept: application/json
 Authorization: Basic test testtset123+
 

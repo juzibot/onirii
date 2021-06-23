@@ -36,7 +36,7 @@ export class LogFactory {
     },
   };
   // log dir ready?
-  private static dirReady: boolean = false;
+  private static dirReady = false;
 
   /**
    * Re-flash log4js configure and create new logger instance (this key config already exist only creat logger instace)

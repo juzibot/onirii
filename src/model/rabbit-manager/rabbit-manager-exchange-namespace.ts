@@ -15,7 +15,7 @@ export namespace RMExchange {
     auto_delete: boolean,
     durable?: boolean,
     internal?: boolean,
-    arguments?: {};
+    arguments?: any;
   }
 
   /**

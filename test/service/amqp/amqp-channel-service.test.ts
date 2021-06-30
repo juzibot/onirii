@@ -16,16 +16,44 @@ test('amqp-channel-service-test', async () => {
     expect(err).not.toBe(undefined);
   }
 
-  // create test endearment
-  await defaultChannel.createQueueIfNotExist('testQueue');
-  await defaultChannel.createQueueIfNotExist('testQueue2');
-  await defaultChannel.createExchangeIfNotExist('testExchange', 'direct');
-  await defaultChannel.createExchangeIfNotExist('testExchange2', 'direct');
+  await defaultChannel.initMetaConfigure({
+    queueList: [
+      {
+        name: 'testQueue',
+      },
+      {
+        name: 'testQueue2',
+      },
+    ],
+    exchangeList: [
+      {
+        name: 'testExchange',
+        type: 'direct',
+      },
+      {
+        name: 'testExchange2',
+        type: 'direct',
+      },
+    ],
+    bindList: [
+      {
+        type: 'qte',
+        fromSourceName: 'testQueue',
+        targetSourceName: 'testExchange',
+        key: 'testKey',
+      },
+      {
+        type: 'ete',
+        fromSourceName: 'testExchange',
+        targetSourceName: 'testExchange2',
+        key: 'testKey',
+      },
+    ],
+  });
 
   // queue part
 
   await defaultChannel.getQueueStatus('testQueue');
-  await defaultChannel.bindQueueToExchange('testQueue', 'testExchange', 'testKey');
   await defaultChannel.purgeQueue('testQueue');
   await defaultChannel.sendMessageToQueue('testQueue', Buffer.from('testMessage'));
   expect((await defaultChannel.getQueueStatus('testQueue')).messageCount).toBe(1);
@@ -34,7 +62,6 @@ test('amqp-channel-service-test', async () => {
 
   // channel part
   await defaultChannel.getExchangeStatus('testExchange');
-  await defaultChannel.bindExchangeToExchange('testExchange', 'testExchange2', 'testKey');
   await defaultChannel.sendMessageToExchange('testExchange2', 'testKey', Buffer.from('testMessage'));
   expect((await defaultChannel.getQueueStatus('testQueue')).messageCount).toBe(1);
 
@@ -56,19 +83,11 @@ test('amqp-channel-service-test', async () => {
     }
   });
 
-  const consumer2 = defaultChannel.enhancerConsume('testQueue', async msg => {
-    if (msg) {
-      position++;
-    }
-    return true;
-  }, 500);
-
   await new Promise(r => setTimeout(r, 5 * 1000));
   expect(position).toBe(11 + 1);
 
   // kill consumer
   await defaultChannel.killConsume(consumer.consumerName);
-  await defaultChannel.killConsume(consumer2.consumerName);
   await defaultChannel.killConsume('unknown');
 
   // other
@@ -81,10 +100,6 @@ test('amqp-channel-service-test', async () => {
   await defaultChannel.unbindExchangeToExchange('testExchange', 'testExchange2', 'testKey');
   await defaultChannel.deleteQueue('testQueue');
   await defaultChannel.deleteExchange('testExchange');
-
-  defaultChannel.enhancerConsume('testQueue2', async msg => {
-    return !!msg;
-  }, 500);
 
   defaultChannel.consume('testQueue2', msg => {
     if (msg) {

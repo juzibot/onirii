@@ -35,7 +35,7 @@ test('rabbit-manager-service-test-vhost', async () => {
   if (typeof tempRs !== 'boolean') {
     expect(tempRs.length).toBe(0);
   }
-  connectService = new AmqpConnectService('test', 0, `amqp://test:testtset123+@106.13.64.53:8888/${ testHost }`);
+  connectService = new AmqpConnectService('test', `amqp://test:testtset123+@106.13.64.53:8888/${ testHost }`);
   await connectService.ready();
   await new Promise(r => setTimeout(r, 5 * 1000));
   tempRs = await managerService.getVhostConnection(testHost);

@@ -19,6 +19,11 @@
     "array-bracket-newline": "error",
     "no-confusing-arrow": "error",
     "no-extra-parens": "error",
-    "arrow-parens": ["error", "as-needed"]
+    "arrow-parens": [
+      "error",
+      "as-needed"
+    ],
+    "@typescript-eslint/no-namespace": "off",
+    "@typescript-eslint/no-explicit-any": "off"
   }
 }

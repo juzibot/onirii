@@ -3,9 +3,10 @@ import { Options, Replies } from 'amqplib/properties';
 import { Logger } from 'log4js';
 import { LogFactory } from '../../factory/log-factory';
 import { AmqpExchangeInterface } from '../../interface/amqp/amqp-exchange-interface';
+import { AmqpExtraInterface } from '../../interface/amqp/amqp-extra-interface';
 import { AmqpMessageInterface } from '../../interface/amqp/amqp-message-interface';
 import { AmqpQueueInterface } from '../../interface/amqp/amqp-queue-interface';
-import { AmqpEnhancerConsumerWrapper, EnhancerConsumerProcessor } from '../../wrapper/amqp-enhancer-consumer-wrapper';
+import { AmqpChannelNamespace } from '../../model/amqp/amqp-channel-namespace';
 import { AmqpOriginalConsumerWrapper } from '../../wrapper/amqp-original-consumer-wrapper';
 
 /**
@@ -15,7 +16,8 @@ import { AmqpOriginalConsumerWrapper } from '../../wrapper/amqp-original-consume
  * @date 2021-06-02
  * @author Luminous(BGLuminous)
  */
-export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInterface, AmqpMessageInterface {
+export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInterface, AmqpMessageInterface,
+  AmqpExtraInterface {
   // logger
   public readonly logger: Logger;
   // channel service instance current channel
@@ -24,16 +26,14 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
   public readonly instanceName: string;
   // original consume pool
   private originalConsumerPool: AmqpOriginalConsumerWrapper[] = [];
-  // original enhancer consumer pool
-  private enhancerConsumerPool: AmqpEnhancerConsumerWrapper[] = [];
   // consumer position
-  private consumerPosition: number = -1;
+  private consumerPosition = -1;
 
   /**
    * Constructor this need inject current amqp channel instance to create
    *
    * @param {string} name identify name
-   * @param {Channel} channel current amqp channel
+   * @param {amqp.Channel | amqp.ConfirmChannel} channel current amqp channel
    */
   constructor(name: string, channel: amqp.Channel | amqp.ConfirmChannel) {
     this.instanceName = name;
@@ -45,6 +45,73 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
       throw new Error('Channel Service Inject Error, Current Amqp Channel Undefined');
     }
     this.currentChannelInstance = channel;
+  }
+
+  public async initMetaConfigure(config: AmqpChannelNamespace.MetaConfigure): Promise<void> {
+    if (config.queueList && config.queueList.length !== 0) {
+      await this.initQueueConfigure(config.queueList);
+    }
+    if (config.exchangeList && config.exchangeList.length !== 0) {
+      await this.initExchangeConfigure(config.exchangeList);
+    }
+    if (config.bindList && config.bindList.length !== 0) {
+      await this.initBindConfigure(config.bindList);
+    }
+  }
+
+  public async initQueueConfigure(config: AmqpChannelNamespace.AmqpQueue[], cleanMode = false)
+    : Promise<void> {
+    try {
+      for (let amqpQueue of config) {
+        if (cleanMode) {
+          await this.currentChannelInstance.deleteQueue(amqpQueue.name, amqpQueue.cleanOption);
+        }
+        await this.currentChannelInstance.assertQueue(amqpQueue.name, amqpQueue.options);
+      }
+    } catch (err) {
+      this.logger.error(`${ this.instanceName } initQueueConfigure() Got Error: ${ JSON.stringify(err) }`);
+      throw err;
+    }
+  }
+
+  public async initExchangeConfigure(config: AmqpChannelNamespace.AmqpExchange[], cleanMode = false)
+    : Promise<void> {
+    try {
+      for (let amqpExchange of config) {
+        if (cleanMode) {
+          await this.currentChannelInstance.deleteExchange(amqpExchange.name, amqpExchange.cleanOption);
+        }
+        await this.currentChannelInstance.assertExchange(amqpExchange.name, amqpExchange.type, amqpExchange.options);
+      }
+    } catch (err) {
+      this.logger.error(`${ this.instanceName } initExchangeConfigure() Got Error: ${ JSON.stringify(err) }`);
+      throw err;
+    }
+  }
+
+  public async initBindConfigure(config: AmqpChannelNamespace.AmqpBind[]): Promise<void> {
+    try {
+      for (let amqpBind of config) {
+        if (amqpBind.type === 'qte') {
+          await this.bindQueueToExchange(
+            amqpBind.fromSourceName,
+            amqpBind.targetSourceName,
+            amqpBind.key,
+            amqpBind.options,
+          );
+        } else if (amqpBind.type === 'ete') {
+          await this.bindExchangeToExchange(
+            amqpBind.fromSourceName,
+            amqpBind.targetSourceName,
+            amqpBind.key,
+            amqpBind.options,
+          );
+        }
+      }
+    } catch (err) {
+      this.logger.error(`${ this.instanceName } initBindConfigure() Got Error: ${ JSON.stringify(err) }`);
+      throw err;
+    }
   }
 
   public async ackAllMessage(): Promise<void> {
@@ -63,44 +130,16 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
     return originalConsumer;
   }
 
-  /**
-   * Create a enhancer consumer can control consumption time
-   *
-   * Note::each consumer can provide about 30 QPS
-   * Note:: if message processor return true ,current channel will auto ack this message
-   *
-   * @param {string} queue target queue list
-   * @param processor each message processor
-   * @param {number} delay each consumption interval time
-   * @param {string} consumeName consumer identify name (identify name can use for kill consumer);
-   * @param {Options.Get} options some as GetMessage() options
-   * @return {Promise<AmqpEnhancerConsumerWrapper>}
-   */
-  public enhancerConsume(
-    queue: string, processor: EnhancerConsumerProcessor, delay: number = 0, consumeName?: string, options?: Options.Get,
-  ): AmqpEnhancerConsumerWrapper {
-    const consumerName: string = consumeName || this.getNextConsumerName();
-    const enhancerConsumer = new AmqpEnhancerConsumerWrapper(consumerName, this, queue, processor, delay, options);
-    this.enhancerConsumerPool.push(enhancerConsumer);
-    return enhancerConsumer;
-  }
-
   public async getCurrentMessage(queueName: string, options?: Options.Get): Promise<false | amqp.GetMessage> {
     return this.currentChannelInstance.get(queueName, options);
   }
 
   public async killConsume(consumerName: string): Promise<boolean> {
-    let targetConsumer: AmqpOriginalConsumerWrapper | AmqpEnhancerConsumerWrapper | undefined;
-    targetConsumer = this.originalConsumerPool.find(element => element.consumerName === consumerName);
+    const targetConsumer: AmqpOriginalConsumerWrapper | undefined
+      = this.originalConsumerPool.find(element => element.consumerName === consumerName);
     if (targetConsumer) {
       await targetConsumer.kill();
       this.originalConsumerPool = this.originalConsumerPool.filter(element => element.consumerName !== consumerName);
-      return true;
-    }
-    targetConsumer = this.enhancerConsumerPool.find(element => element.consumerName === consumerName);
-    if (targetConsumer) {
-      await targetConsumer.kill();
-      this.enhancerConsumerPool = this.enhancerConsumerPool.filter(element => element.consumerName !== consumerName);
       return true;
     }
     this.logger.error(`Can't Kill Unknown Consumer ${ consumerName }`);
@@ -182,7 +221,6 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
 
   public async close(): Promise<void> {
     await Promise.all(this.originalConsumerPool.map(element => element.kill()));
-    await Promise.all(this.enhancerConsumerPool.map(element => element.kill()));
     await this.currentChannelInstance.close();
     this.logger.warn(`Killed Channel ${ this.instanceName }`);
   }

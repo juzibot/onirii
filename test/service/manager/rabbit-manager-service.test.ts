@@ -2,7 +2,7 @@ import { LogFactory } from '../../../src/factory/log-factory';
 import { AmqpConnectService } from '../../../src/service/amqp/amqp-connect-service';
 import { RabbitManagerService } from '../../../src/service/rabbit/rabbit-manager-service';
 
-const managerService = new RabbitManagerService('testManager', 'http://106.13.64.53:10000/api', 'test:testtset123+');
+const managerService = new RabbitManagerService('testManager', 'http://106.13.64.53:9999/api', 'test:testtset123+');
 
 let connectService;
 
@@ -35,7 +35,7 @@ test('rabbit-manager-service-test-vhost', async () => {
   if (typeof tempRs !== 'boolean') {
     expect(tempRs.length).toBe(0);
   }
-  connectService = new AmqpConnectService('test', 0, `amqp://test:testtset123+@106.13.64.53:5672/${ testHost }`);
+  connectService = new AmqpConnectService('test', `amqp://test:testtset123+@106.13.64.53:8888/${ testHost }`);
   await connectService.ready();
   await new Promise(r => setTimeout(r, 5 * 1000));
   tempRs = await managerService.getVhostConnection(testHost);

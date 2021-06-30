@@ -7,7 +7,19 @@ const logger: Logger = LogFactory.create('default');
 test('amqp-connect-service-test', async () => {
   const connectService = new AmqpConnectService('test');
   expect(connectService).not.toBe(undefined);
-  await connectService.ready();
+  await connectService.ready((connect) => {
+    if (!connect) {
+      logger.error('connect error');
+    }
+    logger.debug('Ready Call back');
+  });
+
+  await connectService.addErrorListener((err) => {
+    logger.info(err);
+  });
+  await connectService.addCloseListener((err) => {
+    logger.info(err);
+  });
   // multiple channel test
   logger.debug(connectService.MAX_CHANNEL_COUNT);
   const channelList = [];
@@ -41,7 +53,7 @@ test('amqp-connect-service-test', async () => {
   // test kill channel
   logger.debug(channelList);
   for (const channelListElement of channelList) {
-    if(channelListElement){
+    if (channelListElement) {
       await connectService.killChannel(channelListElement);
     }
   }
@@ -61,13 +73,14 @@ test('amqp-connect-service-test', async () => {
 
 test('amqp-connect-service-error-test', async () => {
   try {
-    new AmqpConnectService('test2', 0, '');
+    new AmqpConnectService('test2', '');
   } catch (err) {
     expect(err).not.toBe(undefined);
   }
-  const connect = new AmqpConnectService('test3', 0, 'https://www.heavenark.com');
+  const connect = new AmqpConnectService('test3', 'https://www.heavenark.com');
   try {
-    await connect.ready();
+    await connect.ready(() => {
+    }, -1);
   } catch (err) {
     expect(err).not.toBe(undefined);
   }

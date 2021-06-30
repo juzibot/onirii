@@ -1,6 +1,6 @@
 variables:
   PROJECT_NAME: "Onirii"
-  VERSION: "1.2.0"
+  VERSION: "1.2.4"
 
 stages:
   - test

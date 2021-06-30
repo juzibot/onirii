@@ -39,12 +39,11 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * Create a amqp connection service instance
    *
    * @param {string} name current server identify name (this name also extend to log config).
-   * @param index connect index
    * @param {string | Options.Connect} amqpUrl specific amqp url and it should include auth info,if is undefined will
    *                                           load from env.
    */
-  constructor(name: string, index?: number, amqpUrl?: string | Options.Connect) {
-    this.instanceName = `${ name }-amqp-connect-${ index ? index : 0 }`;
+  constructor(name: string, amqpUrl?: string | Options.Connect) {
+    this.instanceName = `${ name }-amqp-connect`;
     // init logger
     this.logger = LogFactory.create(this.instanceName);
     if (amqpUrl) {
@@ -71,17 +70,39 @@ export class AmqpConnectService implements AmqpConnectInterface {
   /**
    * Initialize Current Connection, if got connect error throw Error
    *
+   * @param init init callback after connect succeed
+   * @param retry connect retry times if set -1 this connect will not re-connect
    * @param options socket custom options
    */
-  public async ready(options?: any): Promise<void> {
-    this.logger.debug(`Initialize ${ this.instanceName } Creating Amqp Server: ${ this.currentAmqpServerUrl }`);
+  public async ready(init?: (instance: amqp.Connection) => void, retry = 0, options?: any): Promise<void> {
+    const retryInfo = retry > 0 ? `Retry: ${ retry } times` : '';
+    this.logger.debug(
+      `Initialize ${ this.instanceName } Creating Amqp Server: ${ this.currentAmqpServerUrl } ${ retryInfo }`,
+    );
     try {
       this.currentConnection = await amqp.connect(this.currentAmqpServerUrl, options);
       this.logger.debug(`${ this.instanceName } Connected Amqp Server`);
+      if ((init)) {
+        init(this.currentConnection);
+      }
     } catch (err) {
       this.logger.error(`${ this.instanceName } Connect Got Error: ${ err.stack }`);
+      if (retry >= 0 && EnvLoaderUtil.getInstance().getPublicConfig().autoReconnect) {
+        await new Promise(r => setTimeout(r, 5 * 1000));
+        await this.ready(init, ++retry, options);
+      }
       throw err;
     }
+  }
+
+  public async addCloseListener(process: (err: any) => void) {
+    this.currentConnection?.on('close', err => {
+      process(err);
+    });
+  }
+
+  public async addErrorListener(process: (err: any) => void) {
+    this.currentConnection?.on('error', err => process(err));
   }
 
   /**
@@ -189,7 +210,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * @private
    */
   private async killWrapperChannel(): Promise<void> {
-    for (let channelPoolElement of this.wrapperChannelPool) {
+    for (const channelPoolElement of this.wrapperChannelPool) {
       await channelPoolElement.channel.close();
       this.logger.warn(`Killed Channel ${ channelPoolElement.instanceName }`);
     }

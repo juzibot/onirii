@@ -11,7 +11,7 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
     this.logger = logger;
   }
 
-  analDelete(url: string, params: {} | undefined, headers: any, code: number, data: any, rsHeader: any): any {
+  analDelete(url: string, params: any | undefined, headers: any, code: number, data: any, rsHeader: any): any {
     if (this.verbose) {
       this.printVerbose(url, params, headers, code, data, rsHeader);
     }
@@ -33,7 +33,7 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
     }
   }
 
-  public analGet(url: string, params: {} | undefined, headers: any, code: number, data: any, rsHeader: any): any {
+  public analGet(url: string, params: any | undefined, headers: any, code: number, data: any, rsHeader: any): any {
     if (this.verbose) {
       this.printVerbose(url, params, headers, code, data, rsHeader);
     }
@@ -54,14 +54,14 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
     }
   }
 
-  analPost(url: string, params: {} | undefined, headers: any, code: number, data: any, rsHeader: any): any {
+  analPost(url: string, params: any | undefined, headers: any, code: number, data: any, rsHeader: any): any {
     if (this.verbose) {
       this.printVerbose(url, params, headers, code, data, rsHeader);
     }
     return Promise.resolve(undefined);
   }
 
-  analPut(url: string, params: {} | undefined, headers: any, code: number, data: any, rsHeader: any): any {
+  analPut(url: string, params: any | undefined, headers: any, code: number, data: any, rsHeader: any): any {
     if (this.verbose) {
       this.printVerbose(url, params, headers, code, data, rsHeader);
     }
@@ -83,7 +83,7 @@ export class RabbitManagerResponseUtil implements ApiResponseUtilInterface {
     }
   }
 
-  private printVerbose(url: string, params: {} | undefined, headers: any, code: number, data: any, rsHeader: any) {
+  private printVerbose(url: string, params: any | undefined, headers: any, code: number, data: any, rsHeader: any) {
     this.logger.info(
       `Requested Url: ${ url }
         headers: ${ JSON.stringify(headers) || '' }

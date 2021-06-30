@@ -26,6 +26,7 @@ export class EnvLoaderUtil {
       managerApiUrl: process.env.MANAGER_API_URL,
       managerAuth: process.env.MANAGER_AUTH,
       maxChannelCount: Number(process.env.MAX_CHANNEL_COUNT),
+      autoReconnect: process.env.AUTO_RECONNECT ? process.env.AUTO_RECONNECT as unknown as boolean : true
     };
   }
 

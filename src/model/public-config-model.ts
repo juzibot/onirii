@@ -10,4 +10,6 @@ export interface PublicConfigModel {
   managerAuth?: string
   // each connect max channel count
   maxChannelCount?: number;
+  // reconnect
+  autoReconnect?: boolean;
 }

@@ -74,7 +74,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * @param retry connect retry times if set -1 this connect will not re-connect
    * @param options socket custom options
    */
-  public async ready(init?: (instance: amqp.Connection) => void, retry = 0, options?: any): Promise<void> {
+  public async ready(init?: (instance: this) => void, retry = 0, options?: any): Promise<void> {
     const retryInfo = retry > 0 ? `Retry: ${ retry } times` : '';
     this.logger.debug(
       `Initialize ${ this.instanceName } Creating Amqp Server: ${ this.currentAmqpServerUrl } ${ retryInfo }`,
@@ -83,7 +83,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
       this.currentConnection = await amqp.connect(this.currentAmqpServerUrl, options);
       this.logger.debug(`${ this.instanceName } Connected Amqp Server`);
       if ((init)) {
-        init(this.currentConnection);
+        init(this);
       }
     } catch (err) {
       this.logger.error(`${ this.instanceName } Connect Got Error: ${ err.stack }`);

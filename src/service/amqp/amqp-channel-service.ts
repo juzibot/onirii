@@ -55,10 +55,10 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
    */
   private addDefaultListener() {
     this.addErrorListener((err) => {
-      this.logger.error(`Amqp Channel Got Error: ${ err } ${ JSON.stringify(err) }`);
+      this.logger.error(`Amqp Channel(${this.instanceName}) Got Error: ${ err } ${ JSON.stringify(err) }`);
     });
-    this.addCloseListener((err) => {
-      this.logger.error(`Amqp Channel Closed: ${ err } ${ JSON.stringify(err) }`);
+    this.addCloseListener(() => {
+      this.logger.error(`Amqp Channel(${this.instanceName}) Closed`);
     });
   }
 
@@ -67,9 +67,9 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
    *
    * @param process event emit callback
    */
-  public addCloseListener(process: (err: any) => void) {
-    this.currentChannelInstance?.on('close', err => {
-      process(err);
+  public addCloseListener(process: () => void) {
+    this.currentChannelInstance?.on('close', () => {
+      process();
     });
   }
 
@@ -88,7 +88,7 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
    * @param process event emit callback
    */
   public addReturnListener(process: (returnData: any) => void) {
-    this.currentChannelInstance?.on('error', err => process(err));
+    this.currentChannelInstance?.on('return', err => process(err));
   }
 
   /**
@@ -96,8 +96,8 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
    *
    * @param process event emit callback
    */
-  public addDrainListener(process: (drain: any) => void) {
-    this.currentChannelInstance?.on('error', err => process(err));
+  public addDrainListener(process: () => void) {
+    this.currentChannelInstance?.on('drain', () => process());
   }
 
   /**

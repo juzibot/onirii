@@ -103,10 +103,10 @@ export class AmqpConnectService implements AmqpConnectInterface {
    */
   private addDefaultListener() {
     this.addErrorListener((err) => {
-      this.logger.error(`Amqp Connect Got Error: ${ err } ${ JSON.stringify(err) }`);
+      this.logger.error(`Amqp Connect(${this.instanceName}) Got Error: ${ err } ${ JSON.stringify(err) }`);
     });
     this.addCloseListener((err) => {
-      this.logger.error(`Amqp Connect Closed: ${ err } ${ JSON.stringify(err) }`);
+      this.logger.error(`Amqp Connect(${this.instanceName}) Closed: ${ err } ${ JSON.stringify(err) }`);
     });
   }
 

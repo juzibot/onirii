@@ -80,7 +80,11 @@ export class AmqpConnectService implements AmqpConnectInterface {
       `Initialize ${ this.instanceName } Creating Amqp Server: ${ this.currentAmqpServerUrl } ${ retryInfo }`,
     );
     try {
-      this.currentConnection = await amqp.connect(this.currentAmqpServerUrl, options);
+      // @ts-ignore
+      this.currentConnection = await amqp.connect(this.currentAmqpServerUrl, options, (err) => {
+        this.logger.error(`Connection(${this.instanceName}) Connecting Server Got Error: ${err}`);
+        throw new Error(err);
+      });
       this.addDefaultListener();
       this.logger.debug(`${ this.instanceName } Connected Amqp Server`);
       if ((init)) {

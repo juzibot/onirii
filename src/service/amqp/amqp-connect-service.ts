@@ -80,6 +80,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
       `Initialize ${ this.instanceName } Creating Amqp Server: ${ this.currentAmqpServerUrl } ${ retryInfo }`,
     );
     try {
+      await this.close();
       // @ts-ignore
       this.currentConnection = await amqp.connect(this.currentAmqpServerUrl, options, (err) => {
         this.logger.error(`Connection(${this.instanceName}) Connecting Server Got Error: ${err}`);
@@ -163,14 +164,20 @@ export class AmqpConnectService implements AmqpConnectInterface {
    *
    * @return {Promise<void>}
    */
-  async close(): Promise<void> {
-    if (!this.currentConnection) {
-      throw new Error('Please ready this connection first');
+  async close(init = true): Promise<void> {
+    try {
+      if (!this.currentConnection) {
+        this.logger.warn('Please ready this connection first');
+      }
+      await this.killWrapperChannel();
+      await this.killServiceChannel();
+      await this.currentConnection?.close();
+      this.logger.warn(`Amqp Server Instance ${ this.instanceName } Closed`);
+    }catch (err){
+      if(!init){
+        this.logger.warn(`Cant Close Instance ${ this.instanceName } Closed`);
+      }
     }
-    await this.killWrapperChannel();
-    await this.killServiceChannel();
-    await this.currentConnection.close();
-    this.logger.warn(`Amqp Server Instance ${ this.instanceName } Closed`);
   }
 
   /**

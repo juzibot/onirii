@@ -45,8 +45,66 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
       throw new Error('Channel Service Inject Error, Current Amqp Channel Undefined');
     }
     this.currentChannelInstance = channel;
+    this.addDefaultListener();
   }
 
+  /**
+   * Add default listener for each connect service instance
+   *
+   * @private
+   */
+  private addDefaultListener() {
+    this.addErrorListener((err) => {
+      this.logger.error(`Amqp Channel Got Error: ${ err } ${ JSON.stringify(err) }`);
+    });
+    this.addCloseListener((err) => {
+      this.logger.error(`Amqp Channel Closed: ${ err } ${ JSON.stringify(err) }`);
+    });
+  }
+
+  /**
+   * add close event listener
+   *
+   * @param process event emit callback
+   */
+  public addCloseListener(process: (err: any) => void) {
+    this.currentChannelInstance?.on('close', err => {
+      process(err);
+    });
+  }
+
+  /**
+   * add error event listener
+   *
+   * @param process event emit callback
+   */
+  public addErrorListener(process: (err: any) => void) {
+    this.currentChannelInstance?.on('error', err => process(err));
+  }
+
+  /**
+   * add return event listener
+   *
+   * @param process event emit callback
+   */
+  public addReturnListener(process: (returnData: any) => void) {
+    this.currentChannelInstance?.on('error', err => process(err));
+  }
+
+  /**
+   * add drain event listener
+   *
+   * @param process event emit callback
+   */
+  public addDrainListener(process: (drain: any) => void) {
+    this.currentChannelInstance?.on('error', err => process(err));
+  }
+
+  /**
+   * initialize mq exchange/queue/bind
+   *
+   * @param config  exchange/queue/bind config
+   */
   public async initMetaConfigure(config: AmqpChannelNamespace.MetaConfigure): Promise<void> {
     if (config.queueList && config.queueList.length !== 0) {
       await this.initQueueConfigure(config.queueList);
@@ -59,6 +117,12 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
     }
   }
 
+  /**
+   * initialize mq queue
+   *
+   * @param config queue config data
+   * @param cleanMode delete then create
+   */
   public async initQueueConfigure(config: AmqpChannelNamespace.AmqpQueue[], cleanMode = false)
     : Promise<void> {
     try {
@@ -74,6 +138,12 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
     }
   }
 
+  /**
+   * initialize mq exchange
+   *
+   * @param config  exchange config data
+   * @param cleanMode delete then create
+   */
   public async initExchangeConfigure(config: AmqpChannelNamespace.AmqpExchange[], cleanMode = false)
     : Promise<void> {
     try {
@@ -89,6 +159,11 @@ export class AmqpChannelService implements AmqpQueueInterface, AmqpExchangeInter
     }
   }
 
+  /**
+   * initialize mq bind
+   *
+   * @param config bind config data
+   */
   public async initBindConfigure(config: AmqpChannelNamespace.AmqpBind[]): Promise<void> {
     try {
       for (let amqpBind of config) {

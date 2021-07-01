@@ -81,6 +81,7 @@ export class AmqpConnectService implements AmqpConnectInterface {
     );
     try {
       this.currentConnection = await amqp.connect(this.currentAmqpServerUrl, options);
+      this.addDefaultListener();
       this.logger.debug(`${ this.instanceName } Connected Amqp Server`);
       if ((init)) {
         init(this);
@@ -95,13 +96,37 @@ export class AmqpConnectService implements AmqpConnectInterface {
     }
   }
 
-  public async addCloseListener(process: (err: any) => void) {
+  /**
+   * Add default listener for each connect service instance
+   *
+   * @private
+   */
+  private addDefaultListener() {
+    this.addErrorListener((err) => {
+      this.logger.error(`Amqp Connect Got Error: ${ err } ${ JSON.stringify(err) }`);
+    });
+    this.addCloseListener((err) => {
+      this.logger.error(`Amqp Connect Closed: ${ err } ${ JSON.stringify(err) }`);
+    });
+  }
+
+  /**
+   * add close event listener
+   *
+   * @param process event emit callback
+   */
+  public addCloseListener(process: (err: any) => void) {
     this.currentConnection?.on('close', err => {
       process(err);
     });
   }
 
-  public async addErrorListener(process: (err: any) => void) {
+  /**
+   * add error event listener
+   *
+   * @param process event emit callback
+   */
+  public addErrorListener(process: (err: any) => void) {
     this.currentConnection?.on('error', err => process(err));
   }
 

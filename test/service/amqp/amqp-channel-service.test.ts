@@ -10,6 +10,22 @@ test('amqp-channel-service-test', async () => {
     throw new Error('Undefined Channel');
   }
 
+  defaultChannel.addCloseListener((err) => {
+    console.log(err);
+  });
+
+  defaultChannel.addErrorListener(err => {
+    console.log(err);
+  });
+
+  defaultChannel.addReturnListener(returnData => {
+    console.log(returnData);
+  });
+
+  defaultChannel.addDrainListener(drain => {
+    console.log(drain);
+  });
+
   try {
     new AmqpChannelService('testChannel', <amqp.Channel><unknown>undefined);
   } catch (err) {

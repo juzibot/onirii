@@ -74,28 +74,29 @@ export class AmqpConnectService implements AmqpConnectInterface {
    * @param retry connect retry times if set -1 this connect will not re-connect
    * @param options socket custom options
    */
-  public async ready(init?: (instance: this) => void, retry = 0, options?: any): Promise<void> {
+   public async ready(init?: (instance: this) => void, retry = 0, options?: unknown): Promise<void> {
     const retryInfo = retry > 0 ? `Retry: ${ retry } times` : '';
     this.logger.debug(
       `Initialize ${ this.instanceName } Creating Amqp Server: ${ this.currentAmqpServerUrl } ${ retryInfo }`,
     );
     try {
-      await this.close();
-      // @ts-ignore
-      this.currentConnection = await amqp.connect(this.currentAmqpServerUrl, options, (err) => {
-        this.logger.error(`Connection(${this.instanceName}) Connecting Server Got Error: ${err}`);
-        throw new Error(err);
-      });
+      this.currentConnection = await amqp
+        .connect(this.currentAmqpServerUrl, options)
+        .catch((err: any) => {
+          this.logger.error(`Connection(${this.instanceName}) Connecting Server Got Error: ${err}`);
+          throw new Error(err);
+        });
       this.addDefaultListener();
       this.logger.debug(`${ this.instanceName } Connected Amqp Server`);
-      if ((init)) {
+      if(typeof init === 'function') {
         init(this);
       }
-    } catch (err) {
+    } catch (err: any) {
       this.logger.error(`${ this.instanceName } Connect Got Error: ${ err.stack }`);
       if (retry >= 0 && EnvLoaderUtil.getInstance().getPublicConfig().autoReconnect) {
         await new Promise(r => setTimeout(r, 5 * 1000));
         await this.ready(init, ++retry, options);
+        return;
       }
       throw err;
     }

@@ -7,17 +7,17 @@ const logger: Logger = LogFactory.create('default');
 test('amqp-connect-service-test', async () => {
   const connectService = new AmqpConnectService('test');
   expect(connectService).not.toBe(undefined);
-  await connectService.ready((connect) => {
+  await connectService.ready(connect => {
     if (!connect) {
       logger.error('connect error');
     }
     logger.debug('Ready Call back');
   });
 
-  await connectService.addErrorListener((err) => {
+  await connectService.addErrorListener(err => {
     logger.info(err);
   });
-  await connectService.addCloseListener((err) => {
+  await connectService.addCloseListener(err => {
     logger.info(err);
   });
   // multiple channel test
@@ -79,8 +79,7 @@ test('amqp-connect-service-error-test', async () => {
   }
   const connect = new AmqpConnectService('test3', 'https://www.heavenark.com');
   try {
-    await connect.ready(() => {
-    }, -1);
+    await connect.ready(undefined, -1);
   } catch (err) {
     expect(err).not.toBe(undefined);
   }

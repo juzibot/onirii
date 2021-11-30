@@ -3,17 +3,8 @@ variables:
   VERSION: "2.0.0-alpha"
 
 stages:
-  - test
   - sonar
   - publish
-
-test:
-  stage: test
-  tags:
-    - build
-  script:
-    - yarn install
-    - npm run test
 
 sonar:
   stage: sonar

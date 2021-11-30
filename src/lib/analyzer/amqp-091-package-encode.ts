@@ -11,9 +11,7 @@ export class Amqp091PackageEncode {
       this.encodeField(buffer, element);
     }
     buffer.buf.writeUInt32BE(buffer.offset - start - 4, start);
-    return;
   }
-
 
   public static encodeTable(buffer: Amqp091Model.BufferWrapper, table: Record<any, any>): void {
     const start: number = buffer.offset;
@@ -27,6 +25,8 @@ export class Amqp091PackageEncode {
         buffer.buf.writeUInt8(length, buffer.offset++);
         // write key
         buffer.buf.write(tableKey, buffer.offset, 'utf-8');
+        buffer.offset += length;
+        // write value
         this.encodeField(buffer, table[tableKey]);
       }
     }
@@ -174,8 +174,7 @@ export class Amqp091PackageEncode {
 
 
   public static encodeTag(buffer: Amqp091Model.BufferWrapper, tag: Amqp091Definitions.FieldValueType): void {
-    buffer.buf.write(tag);
-    buffer.offset++;
+    buffer.buf.write(tag, buffer.offset++);
   }
 
 

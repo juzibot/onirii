@@ -8,6 +8,7 @@ export class Amqp091PackageDecode {
 
   public static decode(buf: Buffer, fields: Amqp091Model.Field[]): any {
     const data: any = {};
+    // TODO:!!important don't change this index to const, will fix this code small feature
     let bitIndex = 0;
     const bufWrapper: Amqp091Model.BufferWrapper = {
       buf: buf,
@@ -129,7 +130,8 @@ export class Amqp091PackageDecode {
 
   private static decodeLongStr(bufWrapper: Amqp091Model.BufferWrapper): string {
     const length = this.decodeInt(bufWrapper, 4);
-    const buf = bufWrapper.buf.slice(bufWrapper.offset, bufWrapper.offset += length);
+    const buf = bufWrapper.buf.slice(bufWrapper.offset, bufWrapper.offset + length);
+    bufWrapper.offset += length;
     console.log(`Decoding Long Str Result: ${ buf.toString() }`);
     return buf.toString();
   }

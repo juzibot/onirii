@@ -1,6 +1,6 @@
 variables:
-  PROJECT_NAME: "Onirii"
-  VERSION: "1.3.3"
+  PROJECT_NAME: "onirii"
+  VERSION: "2.0.0-alpha"
 
 stages:
   - test
@@ -9,10 +9,6 @@ stages:
 
 test:
   stage: test
-  only:
-    - master
-    - /^release-.*$/
-    - /^test-.*$/
   tags:
     - build
   script:
@@ -22,9 +18,10 @@ test:
 sonar:
   stage: sonar
   only:
+    - master
     - /^feature-.*$/
-    - /^style-.*$/
-    - /^fix-.*$/
+    - /^hotfix-.*$/
+    - /^release-.*$/
   tags:
     - build
   script:
@@ -34,19 +31,16 @@ sonar:
       -Dsonar.projectName=$PROJECT_NAME \
       -Dsonar.projectVersion=$VERSION \
       -Dsonar.host.url=https://sonar.heavenark.com \
-      -Dsonar.login=38fd4defb6216085372051f675776ad81626915b
+      -Dsonar.login=$SONAR_KEY
 
 publish:
   stage: publish
   only:
-    - /^release-.*$/
+    - master
   tags:
     - build
   script:
     - yarn install
     - npm config set registry https://registry.npmjs.org/
     - npm run deploy
-    - npm config set registry https://nexus.heavenark.com/repository/npm-private/
-    - npm run deploy
     - npm config set registry https://nexus.heavenark.com/repository/npm-public/
-

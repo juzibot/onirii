@@ -22,13 +22,10 @@
   "author": "Luminous",
   "license": "MIT",
   "dependencies": {
-    "amqplib": "^0.8.0",
-    "axios": "^0.21.1",
     "dotenv": "^10.0.0",
-    "log4js": "^6.3.0"
+    "jspack": "^0.0.4"
   },
   "devDependencies": {
-    "@types/amqplib": "^0.5.17",
     "@types/jest": "^26.0.23",
     "@types/node": "^14.14.31",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
